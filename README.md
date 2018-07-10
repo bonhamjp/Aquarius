@@ -1,3 +1,7 @@
 # Aquarius
+Modeules to install for OAuth:
 
-A voice controlled IDE, in the cloud!
+passport
+passport-google-oauth
+cookie-session
+cookie-parser
