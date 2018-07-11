@@ -1,5 +1,5 @@
 # Aquarius
-Modeules to install for OAuth:
+Modules to install for OAuth:
 
 passport
 passport-google-oauth
