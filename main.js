@@ -80,6 +80,9 @@ app.get('/auth/google/callback',
 var port = parseInt(process.argv.slice(2)) || 3000;
 
 // start server
-app.listen(port, function() {
+// UPDATE: Need to create 'server' variable to export Express server to test files
+const server = app.listen(port, function() {
   console.log('Express started on port ' + port + '; press Ctrl-C to terminate.');
 });
+
+module.exports = server;
