@@ -14,8 +14,8 @@ module.exports = function (passport) {
     //TODO implement client ID and secret for each server
     passport.use(new GoogleStrategy({
         //client ID and secret for Kyle's server
-        clientID:[secret],
-        clientSecret: [secret],
+        clientID:'80409453417-kvp4mii4i02jtnlhekgsh97kmeq9137f.apps.googleusercontent.com',
+        clientSecret: 'IKDvtRnWXmiAyknMW5A_JjSr',
         callbackURL: '/auth/google/callback'
         },
         (token, refreshToken, profile, done) => {
