@@ -1,15 +1,14 @@
 //set up express
 const express = require('express'),
     app = express(),
+    ws = require('express-ws')(app),
+    handlebars = require('express-handlebars').create({ defaultLayout: 'main' }),
+    bodyParser = require('body-parser'),
     passport = require('passport'),
     auth = require('./auth'),
     cookieParser = require('cookie-parser'),
-    cookieSession = require('cookie-session');
-
-var session = require('express-session');
-var handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
-
-var bodyParser = require('body-parser');
+    cookieSession = require('cookie-session'),
+    pty = require('node-pty');
 
 // set up handlebars
 app.engine('handlebars', handlebars.engine);
@@ -21,8 +20,44 @@ app.use(bodyParser.json());
 
 // serve public assets
 app.use(express.static('public'));
+app.use(express.static('node_modules/xterm/dist'));
 
+// set up OAuth
 auth(passport);
+
+// web socket for terminal
+app.ws("/", function(ws, req) {
+  var term = pty.spawn('bash', [], {
+    name: 'xterm-color',
+    cols: 80,
+    rows: 30,
+    cwd: process.env.PWD,
+    env: process.env
+  });
+
+  var pid = term.pid;
+  console.log('Created terminal. PID: %d', pid);
+
+  term.on('data', function(data) {
+    try {
+      // send response from terminal to the frontend
+      ws.send(data);
+    } catch (e) {
+      // print out error
+      console.log(e);
+    }
+  });
+
+  ws.on('message', function(message) {
+    // send message to terminal
+    term.write(message);
+  });
+
+  ws.on('close', function () {
+    process.kill(pid);
+    console.log('Closed terminal');
+  });
+});
 
 //set up passport
 app.use(passport.initialize());
@@ -68,7 +103,7 @@ app.get('/auth/google', passport.authenticate('google', {
 }));
 
 //callback after verification
-app.get('/auth/google/callback', 
+app.get('/auth/google/callback',
     passport.authenticate('google',{failureRedirect: '/sign-in'}),
     (req, res) => {
         req.session.token = req.user.token;
