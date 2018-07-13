@@ -1,6 +1,7 @@
 //set up strategy
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
+const keys = require('./keys');
 //create export
 module.exports = function (passport) {
     passport.serializeUser((user, done) => {
@@ -10,12 +11,10 @@ module.exports = function (passport) {
     passport.deserializeUser((user, done) => {
         done(null, user);
     });
-    
-    //TODO implement client ID and secret for each server
+  
     passport.use(new GoogleStrategy({
-        //client ID and secret for Kyle's server
-        clientID:'80409453417-kvp4mii4i02jtnlhekgsh97kmeq9137f.apps.googleusercontent.com',
-        clientSecret: 'IKDvtRnWXmiAyknMW5A_JjSr',
+        clientID: keys.google.clientID,
+        clientSecret: keys.google.clientSecret,
         callbackURL: '/auth/google/callback'
         },
         (token, refreshToken, profile, done) => {
