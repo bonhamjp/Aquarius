@@ -10,7 +10,7 @@ module.exports = function (passport) {
     passport.deserializeUser((user, done) => {
         done(null, user);
     });
-    
+
     //TODO implement client ID and secret for each server
     passport.use(new GoogleStrategy({
         //client ID and secret for Kyle's server
