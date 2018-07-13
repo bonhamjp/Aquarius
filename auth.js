@@ -11,7 +11,7 @@ module.exports = function (passport) {
     passport.deserializeUser((user, done) => {
         done(null, user);
     });
-    
+  
     passport.use(new GoogleStrategy({
         clientID: keys.google.clientID,
         clientSecret: keys.google.clientSecret,
