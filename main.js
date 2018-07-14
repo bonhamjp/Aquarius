@@ -29,8 +29,8 @@ auth(passport);
 app.ws("/", function(ws, req) {
   var term = pty.spawn('bash', [], {
     name: 'xterm-color',
-    cols: 80,
-    rows: 30,
+    cols: 128,
+    rows: 48,
     cwd: process.env.PWD,
     env: process.env
   });
