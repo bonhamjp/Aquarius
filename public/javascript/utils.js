@@ -11,11 +11,21 @@ $(document).ready(function() {
 });
 
 function createTerminal() {
+  // apply fit addon, so that size of terminal can be fitted to container
+  Terminal.applyAddon(fit);
+
   // create terminal object
   var term = new Terminal();
 
   // open xterm
   term.open(document.getElementById('terminal'));
+
+  // set xterm display properties
+  term.setOption('fontFamily', 'monospace');
+  term.setOption('fontSize', '14');
+
+  // fit the terminal to dimensions of container
+  term.fit();
 
   // sets up websocket
   var socketURL = 'ws://' + AQUARIUS_DOMAIN_NAME + ':' + AQUARIUS_PORT + '/';
@@ -34,4 +44,9 @@ function createTerminal() {
       socket.send(data);
     });
   }
+
+  $(window).resize(function() {
+    // re-fit the terminal to dimensions of container
+    term.fit();
+  });
 }
