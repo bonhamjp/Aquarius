@@ -1,0 +1,19 @@
+#title{
+	text-align:center;
+	margin:auto;
+	padding-bottom:10px;
+}
+#sign-in{
+	border-style: solid;
+	border-radius:15px;
+	border-width:1px;
+	border-color:gray;
+	text-align:center;
+	margin:auto;
+	width:300px;
+	padding-bottom:10px;
+}
+
+#sign-in:hover{
+	box-shadow: 5px 5px 2px gray;
+}
