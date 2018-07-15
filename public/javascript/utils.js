@@ -1,8 +1,3 @@
-// IMPORTANT:
-//   set these values to the host, and port of the machine it is being run on
-var AQUARIUS_DOMAIN_NAME = 'localhost';
-var AQUARIUS_PORT = '3000';
-
 $(document).ready(function() {
   // only setup terminal on page with terminal element
   if($('#terminal').length == 1) {
@@ -27,8 +22,13 @@ function createTerminal() {
   // fit the terminal to dimensions of container
   term.fit();
 
+  // retrieve domain and port, in order to set up web socket
+  $terminal = $('#terminal');
+  var aquarius_domain = $terminal.data('aquarius-domain');
+  var aquarius_port = $terminal.data('aquarius-port');
+
   // sets up websocket
-  var socketURL = 'ws://' + AQUARIUS_DOMAIN_NAME + ':' + AQUARIUS_PORT + '/';
+  var socketURL = 'ws://' + aquarius_domain + ':' + aquarius_port + '/';
   var socket = new WebSocket(socketURL);
 
   socket.onopen = function() {

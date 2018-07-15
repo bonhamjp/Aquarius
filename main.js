@@ -8,7 +8,8 @@ const express = require('express'),
     auth = require('./auth'),
     cookieParser = require('cookie-parser'),
     cookieSession = require('cookie-session'),
-    pty = require('node-pty');
+    pty = require('node-pty'),
+    keys = require('./keys');
 
 // set up handlebars
 app.engine('handlebars', handlebars.engine);
@@ -75,9 +76,13 @@ app.use(cookieParser());
 app.get('/', (req,res) => {
     if(req.session.token){
         res.cookie('token', req.session.token);
-        var user = {};
-        user.name = req.session.passport.user.profile.displayName;
-        res.render('ide', user);
+
+        var context = {};
+        context.display_name = req.session.passport.user.profile.displayName;
+        context.aquarius_domain = keys.aquarius.domain;
+        context.aquarius_port = keys.aquarius.port;
+
+        res.render('ide', context);
     }
     else{
         res.cookie('token', '')
