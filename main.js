@@ -78,11 +78,21 @@ app.get('/', (req,res) => {
         res.cookie('token', req.session.token);
 
         var context = {};
-        context.display_name = req.session.passport.user.profile.displayName;
-        context.aquarius_domain = keys.aquarius.domain;
-        context.aquarius_port = keys.aquarius.port;
-
-        res.render('ide', context);
+        var emailAddr = req.session.passport.user.profile.emails[0].value;
+        var osu = emailAddr.match(/oregonstate.edu/);
+        
+        if(osu){
+            context.display_name = req.session.passport.user.profile.displayName;
+            context.email = emailAddr;
+            context.aquarius_domain = keys.aquarius.domain;
+            context.aquarius_port = keys.aquarius.port;
+            
+            res.render('ide', context);
+        }
+        else{
+            context.message = "Only users with Oregon State credentials can access VIDE. Sorry.";
+            res.render('sign-in', context);
+        }
     }
     else{
         res.cookie('token', '')
@@ -104,7 +114,7 @@ app.get('/logout', (req, res) => {
 
 //verification of user
 app.get('/auth/google', passport.authenticate('google', {
-    scope: ['https://www.googleapis.com/auth/userinfo.profile']
+    scope: ['https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile']
 }));
 
 //callback after verification
