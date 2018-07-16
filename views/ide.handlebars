@@ -1,9 +1,20 @@
-<div>
-  <p>This is where the IDE will go...</p>
 
-  <div id='terminal' data-aquarius-domain='{{ aquarius_domain }}' data-aquarius-port='{{ aquarius_port }}'></div>
+<nav class = "navbar navbar-light bg-light">
+  <span class="navbar-brand mb-0 h1">Menu Bar</span>
+</nav>
+<!--Greetings {{ display_name }}-->
+<div class = "container-fluid"> 
+  <div class = "row">
+    <div class = "col-2 border">
+      <div class = "file-tree">File Tree</div>
+    </div>
+    <div class = "col-8 border">
+     <div class = "editor-term">Editor & Terminal</div>
+     <div id='terminal' data-aquarius-domain='{{ aquarius_domain }}' data-aquarius-port='{{ aquarius_port }}'></div>
+    </div>
+    <div class = "col-2 border">
+      <div class = "chat">Chat Window</div>
+    </div>
+  </div>
 </div>
-
-Greetings {{ display_name }}
-<br />
 <a href='/logout'>Logout</a>

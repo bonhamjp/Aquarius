@@ -1,3 +1,15 @@
+.row{
+	background: #f8f9fa;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.border{
+	border: solid 1px #6x757d;
+	padding: 10px;
+}
+
+
 #title{
 	text-align:center;
 	margin:auto;
