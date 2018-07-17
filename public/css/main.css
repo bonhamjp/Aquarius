@@ -17,3 +17,10 @@
 #sign-in:hover{
 	box-shadow: 5px 5px 2px gray;
 }
+
+#siError{
+    text-align:center;
+    margin:auto;
+    padding-top:10px;
+    color:red;
+}
