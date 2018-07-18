@@ -10,9 +10,10 @@ const express = require('express'),
     cookieSession = require('cookie-session'),
     pty = require('node-pty'),
     keys = require('./keys');
-	fs = require('fs'),
-	path = require('path')
-	
+	  fs = require('fs'),
+	  path = require('path')
+    fileIO = require('./file-io');
+
 // set up handlebars
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
@@ -31,7 +32,7 @@ auth(passport);
 //function to read file structure
 function dirTree(filename, key) {
     var stats = fs.lstatSync(filename),
-        //json object containing file structure 
+        //json object containing file structure
         info = {
             path: filename,
             title: path.basename(filename),
@@ -44,22 +45,26 @@ function dirTree(filename, key) {
         info.children = fs.readdirSync(filename).map(function(child) {
             return dirTree(filename + '/' + child, key + 1);
         });
-		
-		//sort children putting directories on top 
+
+		//sort children putting directories on top
 		info.children.sort( function(a,b) {
-        
+
         if (a.folder === true && b.folder === false) return -1;
         if (b.folder === true && a.folder === false) return 1;
 
         return a.path.localeCompare(b.path);
 		});
-    } 
-	
+    }
+
 	else {
         info.folder = false;
     }
-		
+
     return info;
+
+// session validator helper
+function authorizedEmail(emailAddr) {
+  return emailAddr.match(/oregonstate.edu/);
 }
 
 // web socket for terminal
@@ -110,7 +115,7 @@ app.use(cookieParser());
 
 //landing page
 app.get('/', (req,res) => {
-   
+
    if(req.session.token){
         //get file structure and write to file
         var info = {}
@@ -119,18 +124,17 @@ app.get('/', (req,res) => {
 		if(err){return console.log(err);}
 			console.log("File write complete");
 	    });
-        
+
         res.cookie('token', req.session.token);
 
         var context = {};
         var emailAddr = req.session.passport.user.profile.emails[0].value;
-        var osu = emailAddr.match(/oregonstate.edu/);
-        
-        if(osu){
+        if(authorizedEmail(emailAddr)) {
             context.display_name = req.session.passport.user.profile.displayName;
             context.email = emailAddr;
             context.aquarius_domain = keys.aquarius.domain;
             context.aquarius_port = keys.aquarius.port;
+
             res.render('ide', context);
         }
         else{
@@ -142,6 +146,47 @@ app.get('/', (req,res) => {
         res.cookie('token', '')
         res.redirect('/sign-in');
     }
+});
+
+// read file
+app.get('/read/:fileName', (req, res) => {
+  if(req.session.token) {
+    res.cookie('token', req.session.token);
+
+    var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      var fileName = req.params.fileName;
+      var fileOutput = fileIO.readFile(fileName, req.session.passport.user.profile.id);
+    }
+
+    // send back plain text
+    res.send(fileOutput);
+  } else {
+    // could not load session
+    res.send('');
+  }
+});
+
+// write file
+app.post('/write/:fileName', (req, res) => {
+  if(req.session.token) {
+    res.cookie('token', req.session.token);
+
+    var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      var fileName = req.params.fileName;
+      var fileContent = req.body['content'];
+
+      // write file to user namespace
+      fileIO.writeFile(fileName, fileContent, req.session.passport.user.profile.id);
+    }
+
+    // send back plain text
+    res.send('Success');
+  } else {
+    // could not load session
+    res.send('Failure!');
+  }
 });
 
 //sign in

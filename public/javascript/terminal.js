@@ -3,9 +3,6 @@ $(document).ready(function() {
   if($('#terminal').length == 1) {
     createTerminal();
   }
-  if($('#editor').length == 1) {
-    createEditor();
-  }
 });
 
 function createTerminal() {
@@ -86,4 +83,3 @@ function createEditor() {
   // set syntax highlighting
   editor.getSession().setMode("ace/mode/c_cpp");
 }
-

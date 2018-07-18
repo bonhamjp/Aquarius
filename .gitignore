@@ -1,2 +1,8 @@
 /node_modules
 /keys.js
+
+# exclude everything in workspaces
+/workspaces/*
+
+# do not exclude workspaces itself
+!workspaces/.gitkeep
