@@ -3,6 +3,9 @@ $(document).ready(function() {
   if($('#terminal').length == 1) {
     createTerminal();
   }
+  if($('#editor').length == 1) {
+    createEditor();
+  }
 });
 
 function createTerminal() {
@@ -72,3 +75,15 @@ $(function(){
 		}
 	});
 })
+
+function createEditor() {
+  // initialize ace editor
+  var editor = ace.edit("editor");
+
+  // set editor theme
+  editor.setTheme("ace/theme/monokai");
+
+  // set syntax highlighting
+  editor.getSession().setMode("ace/mode/c_cpp");
+}
+
