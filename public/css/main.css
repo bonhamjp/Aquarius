@@ -36,3 +36,7 @@
     padding-top:10px;
     color:red;
 }
+
+#editor {
+	height: 300px;
+}

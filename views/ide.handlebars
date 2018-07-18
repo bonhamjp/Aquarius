@@ -3,14 +3,24 @@
   <span class="navbar-brand mb-0 h1">Menu Bar</span>
 </nav>
 <!--Greetings {{ display_name }}-->
-<div class = "container-fluid"> 
+<div class = "container-fluid">
   <div class = "row">
     <div class = "col-2 border">
       <div class = "file-tree">File Tree</div>
     </div>
     <div class = "col-8 border">
-     <div class = "editor-term">Editor & Terminal</div>
-     <div id='terminal' data-aquarius-domain='{{ aquarius_domain }}' data-aquarius-port='{{ aquarius_port }}'></div>
+      <div id="editor">
+        #include<iostream>
+
+        // this is just a test
+        int main() {
+            std::cout << "Hello World" << std::endl;
+
+            return 0;
+        }
+      </div>
+
+      <div id='terminal' data-aquarius-domain='{{ aquarius_domain }}' data-aquarius-port='{{ aquarius_port }}'></div>
     </div>
     <div class = "col-2 border">
       <div class = "chat">Chat Window</div>
