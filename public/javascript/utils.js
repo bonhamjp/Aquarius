@@ -50,3 +50,25 @@ function createTerminal() {
     term.fit();
   });
 }
+
+$(function(){
+  // using default options
+  $("#tree").fancytree({
+	  source: {
+		  url: "/getTreeData.json",
+		  cache: false
+	  },
+	  //TODO add functionality for clicked files to load into text editor
+	  activate: function(event, data){
+		  // A node was activated: display its title:
+		  var node = data.node;
+		  $("#echoActive").text(node.title)
+		},
+		beforeSelect: function(event, data){
+		  // A node is about to be selected: prevent this, for folder-nodes:
+		  if( data.node.isFolder() ){
+			return false;
+		  }
+		}
+	});
+})
