@@ -10,7 +10,9 @@ const express = require('express'),
     cookieSession = require('cookie-session'),
     pty = require('node-pty'),
     keys = require('./keys');
-
+	fs = require('fs'),
+	path = require('path')
+	
 // set up handlebars
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
@@ -25,6 +27,40 @@ app.use(express.static('node_modules/xterm/dist'));
 
 // set up OAuth
 auth(passport);
+
+//function to read file structure
+function dirTree(filename, key) {
+    var stats = fs.lstatSync(filename),
+        //json object containing file structure 
+        info = {
+            path: filename,
+            title: path.basename(filename),
+			key: key
+        };
+
+    if (stats.isDirectory()) {
+        info.folder = true;
+		info.lazy = true; //FancyTree param to only expand node when clicked
+        info.children = fs.readdirSync(filename).map(function(child) {
+            return dirTree(filename + '/' + child, key + 1);
+        });
+		
+		//sort children putting directories on top 
+		info.children.sort( function(a,b) {
+        
+        if (a.folder === true && b.folder === false) return -1;
+        if (b.folder === true && a.folder === false) return 1;
+
+        return a.path.localeCompare(b.path);
+		});
+    } 
+	
+	else {
+        info.folder = false;
+    }
+		
+    return info;
+}
 
 // web socket for terminal
 app.ws("/", function(ws, req) {
@@ -74,7 +110,16 @@ app.use(cookieParser());
 
 //landing page
 app.get('/', (req,res) => {
-    if(req.session.token){
+   
+   if(req.session.token){
+        //get file structure and write to file
+        var info = {}
+	    info = dirTree('.', 1); //we can pass in any file or direcotry we want; could be used to control file access
+	    fs.writeFile("./public/getTreeData.json", JSON.stringify(info), function(err){
+		if(err){return console.log(err);}
+			console.log("File write complete");
+	    });
+        
         res.cookie('token', req.session.token);
 
         var context = {};
@@ -86,7 +131,6 @@ app.get('/', (req,res) => {
             context.email = emailAddr;
             context.aquarius_domain = keys.aquarius.domain;
             context.aquarius_port = keys.aquarius.port;
-            
             res.render('ide', context);
         }
         else{
