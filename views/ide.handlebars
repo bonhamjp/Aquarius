@@ -1,5 +1,5 @@
 
-<nav class = "navbar navbar-light bg-light">
+<nav class="navbar navbar-light bg-light">
   <span class="navbar-brand mb-0 h1">Menu Bar</span>
 
   <span class="navbar-brand mb-0 h1">
@@ -7,20 +7,25 @@
   </span>
 </nav>
 <!--Greetings {{ display_name }}-->
-<div class = "container-fluid">
-  <div class = "row">
-    <div class = "col-2 border">
-      <div class = "file-tree">File Tree
-		<div id="tree"></div><div>Active node: <span id="echoActive">-</span></div>
-	  </div>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-2 border">
+      <div class="file-tree">
+          File Tree
+		      <div id="tree" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
+          <div>Active node: <span id="echoActive">-</span></div>
+	    </div>
     </div>
-    <div class = "col-8 border">
-      <div id="editor"></div>
-      <div id='terminal' data-aquarius-domain='{{ aquarius_domain }}' data-aquarius-port='{{ aquarius_port }}'></div>
+    <div class="col-8 border">
+      <div id="editor-container">
+        <div id="editor"></div>
+      </div>
+
+      <div id="terminal" data-aquarius-domain="{{ aquarius_domain }}" data-aquarius-port="{{ aquarius_port }}"></div>
     </div>
-    <div class = "col-2 border">
-      <div class = "chat">Chat Window</div>
+    <div class="col-2 border">
+      <div class="chat">Chat Window</div>
     </div>
   </div>
 </div>
-<a href='/logout'>Logout</a>
+<a href="/logout">Logout</a>
