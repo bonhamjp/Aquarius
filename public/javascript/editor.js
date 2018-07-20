@@ -62,25 +62,25 @@ function createNavTree() {
 
   // using default options
   $tree.fancytree({
-	  source: {
-		  url: "/" + namespace + "/tree/data.json",
-		  cache: false
-	  },
-	  //TODO add functionality for clicked files to load into text editor
-	  activate: function(event, data) {
-		  // A node was activated: display its title:
-		  var node = data.node;
+    source: {
+      url: "/" + namespace + "/tree/data.json",
+      cache: false
+    },
+    //TODO add functionality for clicked files to load into text editor
+    activate: function(event, data) {
+      // A node was activated: display its title:
+      var node = data.node;
       $("#echoActive").text(node.title)
 
       // read and display selected file
       fileName = node.title;
       readFile();
-		},
-		beforeSelect: function(event, data) {
-		  // A node is about to be selected: prevent this, for folder-nodes:
-		  if(data.node.isFolder()) {
-			return false;
-		  }
-		}
-	});
+    },
+    beforeSelect: function(event, data) {
+      // A node is about to be selected: prevent this, for folder-nodes:
+      if(data.node.isFolder()) {
+        return false;
+      }
+    }
+  });
 }

@@ -12,7 +12,7 @@ module.exports = {
     info = {
       path: fileName,
       title: path.basename(fileName),
-  		key: key
+      key: key
     };
 
     if (stats.isDirectory()) {
