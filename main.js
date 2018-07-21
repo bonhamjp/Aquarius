@@ -9,6 +9,7 @@ const express = require("express"),
     cookieParser = require("cookie-parser"),
     cookieSession = require("cookie-session"),
     pty = require("node-pty"),
+    path = require('path');
     keys = require("./keys");
     dirTree = require("./dir-tree"),
     fileIO = require("./file-io");
@@ -109,6 +110,7 @@ app.get("/", (req,res) => {
       context.email = emailAddr;
       context.aquarius_domain = keys.aquarius.domain;
       context.aquarius_port = keys.aquarius.port;
+      context.root_path = path.resolve(__dirname);
       context.namespace = namespace;
       context.project = project;
 
