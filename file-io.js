@@ -41,6 +41,11 @@ function writeUserFile(fileName, fileContent, namespace, project) {
 module.exports = {
   // builds directory, if it does not yet exist
   buildProject: function(namespace, project) {
+    // check if main workspace directory exists
+    if (!fs.existsSync(ROOT_SPACE)) {
+      fs.mkdirSync(ROOT_SPACE);
+    }
+
     // var path = projectPath(namespace, project);
     var path = ROOT_SPACE + namespace;
 
