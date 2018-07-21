@@ -82,8 +82,8 @@ app.use(cookieParser());
 
 //landing page
 app.get("/", (req,res) => {
+  var context = {};
   if(req.session.token) {
-    var context = {};
     var emailAddr = req.session.passport.user.profile.emails[0].value;
     if(authorizedEmail(emailAddr)) {
       // TODO: allow customizable projects
@@ -118,7 +118,7 @@ app.get("/", (req,res) => {
       res.render("sign-in", context);
     }
   } else {
-    context.message = "Only users with Oregon State credentials can access VIDE. Sorry.";
+    context.message = "You must log in with an Oregon State email address to use VIDE.";
     res.render("sign-in", context);
   }
 });
