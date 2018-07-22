@@ -55,11 +55,19 @@ module.exports = {
     }
 
     // project path
-    path += "/" + project;
+    var projectPath = path + "/" + project;
 
     // check if project exists
-    if (!fs.existsSync(path)) {
-      fs.mkdirSync(path);
+    if (!fs.existsSync(projectPath)) {
+      fs.mkdirSync(projectPath);
+    }
+
+    // build path
+    var buildPath = path + "/builds";
+
+    // check if build directory exists
+    if (!fs.existsSync(buildPath)) {
+      fs.mkdirSync(buildPath);
     }
   },
 

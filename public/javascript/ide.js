@@ -83,6 +83,11 @@ function createEditor() {
   $(document).on("click", "#save-file", function() {
     writeFile();
   });
+
+  // set build button listener
+  $(document).on("click", "#build-source", function() {
+    buildSource();
+  });
 }
 
 // asynchronous file reader
@@ -106,6 +111,39 @@ function writeFile() {
   });
 }
 
+// compile, and run source
+function buildSource() {
+  // only compile if a c++ file is being viewed, and in project dir
+  if(fileName.match(/\.cpp$/)) {
+    // retrieve user workspace folder name
+    $tree = $("#tree");
+    var rootPath = $tree.data("root-path");
+    var namespace = $tree.data("namespace");
+    var project = $tree.data("project");
+
+    // make sure the in project
+    socket.send("cd " + rootPath + "/workspaces/" + namespace + "/" + project + "\n");
+
+    // timestamp build
+    var date = new Date();
+    var timeStampString = date.getYear().toString() + "-" +
+                          date.getMonth().toString() + "-" +
+                          date.getDate().toString() + "-" +
+                          date.getHours().toString() + "-" +
+                          date.getMinutes().toString() + "-" +
+                          date.getSeconds().toString();
+    var outputName = "build" + timeStampString;
+
+    // console.log("../builds/" + outputName);
+
+    // compile
+    socket.send("g++ " + fileName + " -o ../builds/" + outputName + " \n");
+
+    // run
+    socket.send("../builds/" + outputName + " \n");
+  }
+}
+
 function createNavTree() {
   // retrieve user workspace folder name
   $tree = $("#tree");
@@ -119,12 +157,8 @@ function createNavTree() {
     },
     //TODO add functionality for clicked files to load into text editor
     activate: function(event, data) {
-      // A node was activated: display its title:
-      var node = data.node;
-      $("#echoActive").text(node.title)
-
       // read and display selected file
-      fileName = node.title;
+      fileName = data.node.title;
       readFile();
     },
     beforeSelect: function(event, data) {
