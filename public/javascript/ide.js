@@ -170,6 +170,53 @@ function createNavTree() {
   });
 }
 
+function createChatBox() {
+  // prevent chat form from submitting
+  $("#message-form").on("submit", function(e) {
+    e.preventDefault();
+
+    // only output into chat box if message entered
+    var message = $.trim($("#message-input").val());
+    if(message != "") {
+      // get user display name
+      var user = $("#chat-box").data("display-name");
+
+      // write message to chat
+      writeToChat(user, MESSAGE_SOURCES.OUTGOING, message);
+
+      // clear message box
+      $("#message-input").val("");
+    }
+  });
+}
+
+const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1 };
+function writeToChat(user, source, content) {
+  // get time stamp
+  var date = new Date();
+  var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+
+  var messageClass = "";
+  // change class based on whether message sent, or received
+  if(source == MESSAGE_SOURCES.OUTGOING) {
+    messageClass = "sent-message";
+  } else if(source == MESSAGE_SOURCES.INCOMING) {
+    messageClass = "received-message";
+  }
+
+  // append list item to li
+  var rawLi = "<li class='" + messageClass + " data-user='" + user + "' data-time='" + timeStampString + "' data-content='" + content + "'>" +
+              "  <p class='message-details'><b>" + user + "</b> " + timeStampString + "</p>" +
+              "  <p class='message-content'>" + content +"</p>" +
+              "</li>";
+
+  $("#chat-history").append(rawLi);
+
+  // scroll to bottom of chat box
+  var chatContainer = document.getElementById("chat-history-container");
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
 // setup ide after document is ready
 $(document).ready(function() {
   // only setup terminal on ide page
@@ -183,5 +230,9 @@ $(document).ready(function() {
   // only setup nave tree on ide page
   if($("#tree").length == 1) {
     createNavTree();
+  }
+  // only setup chat box on ide page
+  if($("#chat-box").length == 1) {
+    createChatBox();
   }
 });
