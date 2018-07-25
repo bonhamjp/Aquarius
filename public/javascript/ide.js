@@ -77,11 +77,13 @@ function createEditor() {
 
   // set default file, and load
   fileName = "main.cpp";
-  readFile();
+  var project = $("#tree").data("project");
+  readFile(fileName, project, writeToEditorHandler);
 
   // set save button listener
   $(document).on("click", "#save-file", function() {
-    writeFile();
+    var project = $("#tree").data("project");
+    writeFile(fileName, project, editor.getValue());
   });
 
   // set build button listener
@@ -91,21 +93,33 @@ function createEditor() {
 }
 
 // asynchronous file reader
-function readFile() {
+function readFile(fileName, folder, handler) {
   $.ajax({
-    url: "/read/" + fileName
+    url: "/read/" + fileName + "/" + folder
   }).done(function(data) {
     // write contents of file to editor
-    editor.setValue(data);
+    // editor.setValue(data);
+    handler(data);
   });
 }
 
 // asynchronous file write
-function writeFile() {
+function writeFile(fileName, folder, content) {
   $.ajax({
     type: "POST",
-    url: "/write/" + fileName,
-    data: { content: editor.getValue() }
+    url: "/write/" + fileName + "/" + folder,
+    data: { content: content }
+  }).done(function(data) {
+    // TODO: display success status somewhere
+  });
+}
+
+// asynchronous file write
+function appendFile(fileName, folder, content) {
+  $.ajax({
+    type: "POST",
+    url: "/append/" + fileName + "/" + folder,
+    data: { content: content }
   }).done(function(data) {
     // TODO: display success status somewhere
   });
@@ -134,8 +148,6 @@ function buildSource() {
                           date.getSeconds().toString();
     var outputName = "build" + timeStampString;
 
-    // console.log("../builds/" + outputName);
-
     // compile
     socket.send("g++ " + fileName + " -o ../builds/" + outputName + " \n");
 
@@ -159,7 +171,8 @@ function createNavTree() {
     activate: function(event, data) {
       // read and display selected file
       fileName = data.node.title;
-      readFile();
+      var project = $("#tree").data("project");
+      readFile(fileName, project, writeToEditorHandler);
     },
     beforeSelect: function(event, data) {
       // A node is about to be selected: prevent this, for folder-nodes:
@@ -168,6 +181,92 @@ function createNavTree() {
       }
     }
   });
+}
+
+function createChatBox() {
+  // read chat history, and write into chat box
+  readFile("chat.json", "chat", writeToChatHandler);
+
+  // prevent chat form from submitting
+  $("#message-form").on("submit", function(e) {
+    e.preventDefault();
+
+    // only output into chat box if message entered
+    var message = $.trim($("#message-input").val());
+    if(message != "") {
+      // get user display name
+      var user = $("#chat-box").data("display-name");
+
+      // write message to chat
+      logChatMessage(user, MESSAGE_SOURCES.OUTGOING, message);
+
+      // clear message box
+      $("#message-input").val("");
+    }
+  });
+}
+
+const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1 };
+function logChatMessage(user, source, content) {
+  // get time stamp
+  var date = new Date();
+  var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+
+  // write in chat box
+  writeToChat(user, source, content, timeStampString);
+
+  // save chat output to log
+  var message = { user: user, source: source, content: content, timeStamp: timeStampString };
+  appendFile("chat.json", "chat", JSON.stringify(message) + "\n");
+}
+
+function writeToChat(user, source, content, timeStamp) {
+  var messageClass = "";
+  // change class based on whether message sent, or received
+  if(source == MESSAGE_SOURCES.OUTGOING) {
+    messageClass = "sent-message";
+  } else if(source == MESSAGE_SOURCES.INCOMING) {
+    messageClass = "received-message";
+  }
+
+  // append list item to li
+  var rawLi = "<li class='" + messageClass + "'>" +
+              "  <p class='message-details'><b>" + user + "</b> " + timeStamp + "</p>" +
+              "  <p class='message-content'>" + content +"</p>" +
+              "</li>";
+
+  // add to chat
+  $("#chat-history").append(rawLi);
+
+  // scroll to bottom of chat box
+  var chatContainer = document.getElementById("chat-history-container");
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// handlers for acting on data read from files
+// write to ace editor
+function writeToEditorHandler(data) {
+  // simply write entire file output to editor
+  editor.setValue(data);
+}
+
+// write to chat box
+function writeToChatHandler(data) {
+  // only display in the chat box if message exist
+  var messageLog = data.split("\n");
+  if(messageLog.length > 0) {
+    $.each(messageLog, function(i, rawMessage) {
+      try {
+        // convert saved chat message to json
+        var message = JSON.parse(rawMessage);
+
+        // write message data to chat
+        writeToChat(message["user"], message["source"], message["content"], message["timeStamp"]);
+      } catch (e) {
+        console.log("trying to parse trailing empty line... need to fix");
+      }
+    });
+  }
 }
 
 // setup ide after document is ready
@@ -183,5 +282,9 @@ $(document).ready(function() {
   // only setup nave tree on ide page
   if($("#tree").length == 1) {
     createNavTree();
+  }
+  // only setup chat box on ide page
+  if($("#chat-box").length == 1) {
+    createChatBox();
   }
 });

@@ -24,7 +24,18 @@
       <div id="terminal" data-aquarius-domain="{{ aquarius_domain }}" data-aquarius-port="{{ aquarius_port }}"></div>
     </div>
     <div class="col-2 border">
-      <div class="chat">Chat Window</div>
+      <div id="chat-box" data-display-name="{{ display_name }}">
+        <div id="chat-history-container">
+          <ul id="chat-history"></ul>
+        </div>
+
+        <div id="chat-message-form-container"">
+          <form id="message-form" action="#">
+            <textarea id="message-input"></textarea>
+            <input id="message-submit" type="submit" value="Send" />
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

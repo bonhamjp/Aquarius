@@ -126,14 +126,17 @@ app.get("/", (req,res) => {
 });
 
 // read file
-app.get("/read/:fileName", (req, res) => {
+app.get("/read/:fileName/:folder", (req, res) => {
   if(req.session.token) {
     res.cookie("token", req.session.token);
 
     var emailAddr = req.session.passport.user.profile.emails[0].value;
     if(authorizedEmail(emailAddr)) {
       var fileName = req.params.fileName;
-      var fileOutput = fileIO.readFile(fileName, req.session.passport.user.profile.id, emailAddr);
+      var folder = req.params.folder;
+
+      // read file from namespace
+      var fileOutput = fileIO.readFile(fileName, req.session.passport.user.profile.id, folder);
     }
 
     // send back plain text
@@ -145,17 +148,41 @@ app.get("/read/:fileName", (req, res) => {
 });
 
 // write file
-app.post("/write/:fileName", (req, res) => {
+app.post("/write/:fileName/:folder", (req, res) => {
   if(req.session.token) {
     res.cookie("token", req.session.token);
 
     var emailAddr = req.session.passport.user.profile.emails[0].value;
     if(authorizedEmail(emailAddr)) {
       var fileName = req.params.fileName;
+      var folder = req.params.folder;
       var fileContent = req.body["content"];
 
       // write file to user namespace
-      fileIO.writeFile(fileName, fileContent, req.session.passport.user.profile.id, emailAddr);
+      fileIO.writeFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
+    }
+
+    // send back plain text
+    res.send("Success");
+  } else {
+    // could not load session
+    res.send("Failure!");
+  }
+});
+
+// write file
+app.post("/append/:fileName/:folder", (req, res) => {
+  if(req.session.token) {
+    res.cookie("token", req.session.token);
+
+    var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      var fileName = req.params.fileName;
+      var folder = req.params.folder;
+      var fileContent = req.body["content"];
+
+      // write file to user namespace
+      fileIO.appendFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
     }
 
     // send back plain text

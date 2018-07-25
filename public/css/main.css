@@ -9,7 +9,6 @@
 	padding: 10px;
 }
 
-
 #title{
 	text-align:center;
 	margin:auto;
@@ -31,12 +30,70 @@
 }
 
 #siError{
-    text-align:center;
-    margin:auto;
-    padding-top:10px;
-    color:red;
+  text-align:center;
+  margin:auto;
+  padding-top:10px;
+  color:red;
 }
 
 #editor {
 	height: 300px;
+}
+
+#chat-box {
+	height: 100%;
+}
+
+#chat-history-container {
+	margin: 0px 0px 10px 0px;
+	border: 1px solid #dee2e6;
+	height: 500px;
+	overflow: scroll;
+}
+
+#message-form #message-input {
+	font-size: 12px;
+	border: 1px solid #dee2e6;
+	width: 100%;
+	margin: 2.5px 0;
+}
+
+#message-form {
+	height: 30%;
+}
+
+#message-input {
+	height: 100px;
+}
+
+#chat-history {
+	padding: 5px;
+	list-style-type: none;
+}
+
+#chat-history li {
+	padding: 5px;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.message-details, .message-content {
+	padding: 0;
+	margin: 0;
+}
+
+.message-content {
+	font-size: 12px;
+}
+
+.message-details {
+	font-size: 10px;
+	opacity: 0.5;
+}
+
+.received-message {
+	text-align: left;
+}
+
+.sent-message {
+	text-align: right;
 }

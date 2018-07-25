@@ -37,6 +37,17 @@ function writeUserFile(fileName, fileContent, namespace, project) {
   });
 }
 
+function appendUserFile(fileName, fileContent, namespace, project) {
+  var path = filePath(fileName, namespace, project);
+
+  // write value over file
+  fs.appendFile(path, fileContent, function (err) {
+    if (err) {
+      throw err;
+    }
+  });
+}
+
 //create export
 module.exports = {
   // builds directory, if it does not yet exist
@@ -69,6 +80,14 @@ module.exports = {
     if (!fs.existsSync(buildPath)) {
       fs.mkdirSync(buildPath);
     }
+
+    // chat log path
+    var chatPath = path + "/chat";
+
+    // check if build directory exists
+    if (!fs.existsSync(chatPath)) {
+      fs.mkdirSync(chatPath);
+    }
   },
 
   // builds file, if it does not yet exist
@@ -97,5 +116,14 @@ module.exports = {
 
     // write data to file
     writeUserFile(fileName, fileContent, namespace, project);
+  },
+
+  // append to files within user namespace
+  appendFile: function(fileName, fileContent, namespace, project) {
+    // setup project, if it does not exist
+    this.buildProject(namespace, project);
+
+    // write data to file
+    appendUserFile(fileName, fileContent, namespace, project);
   }
 };
