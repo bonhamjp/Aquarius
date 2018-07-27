@@ -199,6 +199,9 @@ function createChatBox() {
 
       // write message to chat
       logChatMessage(user, MESSAGE_SOURCES.OUTGOING, message);
+      
+      // send message to dialogflow
+      sendToDialogFlow(message);
 
       // clear message box
       $("#message-input").val("");
@@ -267,6 +270,51 @@ function writeToChatHandler(data) {
       }
     });
   }
+}
+
+//send text to dialogflow
+function sendToDialogFlow(content){
+
+  //set variables
+  var projectId = 'helloworld-b026e';
+  var sessionId = '123';
+  var query = 'hi';
+  var languageCode = 'en-US';
+
+  //instantiate dialogue client
+  var sessionClient = new dialogflow.SessionsClient();
+  
+  //set session path to project
+  var sessionPath = sessionClient.sessionPath(projectId, sessionId);
+
+  //create request to dialogflow
+  const request = {
+    session: sessionPath,
+    queryInput: {
+	text: {
+	  text: query,
+	  languageCode: languageCode,
+	},
+    },
+  };
+
+  //send request and log result for testing
+  sessionClient
+	.detectIntent(request)
+	.then(responses => {
+	console.log('Detected Intent');
+	const result = responses[0].queryResult;
+	console.log('Query: ${result.fulfillmentText}');
+	if(result.intent){
+		console.log('Intent: ${result.intent.displayName}');
+	}else{
+		console.log('No intent manched.');
+	}
+	})
+	.catch(err => {
+		console.error('ERROR:', err);
+	});
+	
 }
 
 // setup ide after document is ready
