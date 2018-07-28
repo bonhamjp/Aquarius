@@ -171,6 +171,29 @@ app.post("/write/:fileName/:folder", (req, res) => {
 });
 
 // write file
+app.post("/writebinary/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, res) => {
+  if(req.session.token) {
+    res.cookie("token", req.session.token);
+
+    var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      var fileName = req.params.fileName;
+      var folder = req.params.folder;
+      var fileContent = req.body["content"];
+
+      // write file to user namespace
+      fileIO.writeBinaryFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
+    }
+
+    // send back plain text
+    res.send("Success");
+  } else {
+    // could not load session
+    res.send("Failure!");
+  }
+});
+
+// write file
 app.post("/append/:fileName/:folder", (req, res) => {
   if(req.session.token) {
     res.cookie("token", req.session.token);

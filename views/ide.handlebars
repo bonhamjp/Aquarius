@@ -29,12 +29,19 @@
           <ul id="chat-history"></ul>
         </div>
 
-        <div id="chat-message-form-container"">
+        <div id="chat-message-form-container">
           <form id="message-form" action="#">
             <textarea id="message-input"></textarea>
             <input id="message-submit" type="submit" value="Send" />
           </form>
         </div>
+      </div>
+
+      <div id="voice-record-form-container">
+        <form id="voice-record-form" action="#">
+          <input type="file" accept="audio/*" capture>
+          <input id="voice-record-submit" type="submit" value="Record" />
+        </form>
       </div>
     </div>
   </div>

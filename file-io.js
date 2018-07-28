@@ -37,6 +37,18 @@ function writeUserFile(fileName, fileContent, namespace, project) {
   });
 }
 
+function writeBinaryUserFile(fileName, fileContent, namespace, project) {
+  var path = filePath(fileName, namespace, project);
+
+  // write value over file
+  fs.writeFile(path, fileContent, "binary", function (err) {
+    if (err) {
+      throw err;
+    }
+  });
+}
+
+
 function appendUserFile(fileName, fileContent, namespace, project) {
   var path = filePath(fileName, namespace, project);
 
@@ -88,6 +100,14 @@ module.exports = {
     if (!fs.existsSync(chatPath)) {
       fs.mkdirSync(chatPath);
     }
+
+    // voice recording path
+    var voicePath = path + "/voice";
+
+    // check if voice recording directory exists
+    if (!fs.existsSync(voicePath)) {
+      fs.mkdirSync(voicePath);
+    }
   },
 
   // builds file, if it does not yet exist
@@ -117,6 +137,16 @@ module.exports = {
     // write data to file
     writeUserFile(fileName, fileContent, namespace, project);
   },
+
+  // writes files to user namespace
+  writeBinaryFile: function(fileName, fileContent, namespace, project) {
+    // setup project, if it does not exist
+    this.buildProject(namespace, project);
+
+    // write data to file
+    writeBinaryUserFile(fileName, fileContent, namespace, project);
+  },
+
 
   // append to files within user namespace
   appendFile: function(fileName, fileContent, namespace, project) {
