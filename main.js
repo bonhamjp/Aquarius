@@ -9,6 +9,7 @@ const express = require("express"),
     cookieParser = require("cookie-parser"),
     cookieSession = require("cookie-session"),
     pty = require("node-pty"),
+    dialogflow = require('dialogflow'),
     path = require('path');
     keys = require("./keys");
     dirTree = require("./dir-tree"),
@@ -241,6 +242,52 @@ app.get("/auth/google/callback",
         res.redirect("/");
     }
 );
+
+//sends text to dialogflow
+app.post("/sendToDialogflow", function(req, res){
+	//create variables
+	const projectId = 'helloworld-b026e';
+	const sessionId = '123';
+	const query = req.body["content"];
+	const languageCode = 'en-US';
+	
+	//Instantiate a Dialogflow client
+	const sessionClient = new dialogflow.SessionsClient();
+	
+	//Define session path
+	const sessionPath = sessionClient.sessionPath(projectId, sessionId);
+
+	//create dialogflow request
+	const request = {
+		session: sessionPath,
+		queryInput: {
+			text: {
+				text: query,
+				languageCode: languageCode,
+			},
+		},
+	};
+
+	//send request and log result
+	sessionClient
+	  .detectIntent(request)
+	  .then(responses => {
+		  console.log('Detected Intent');
+		  const result = responses[0].queryResult;
+                  const chat = result.fulfillmentText;
+		  console.log(`	Query: ${result.queryText}`);
+		  console.log(` Response: ${result.fulfillmentText}`);
+		  if(result.intent){
+			  console.log(` Intent: ${result.intent.displayName}`);
+		  }else{
+			  console.log(`No intent matched.`);
+		  }
+		  res.send(chat);
+	  })
+	  .catch(err => {
+		  console.error('ERROR: ', err);
+	  });
+});
 
 // use port specified in command, if it exists
 var port = parseInt(process.argv.slice(2)) || 3000;
