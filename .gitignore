@@ -1,5 +1,6 @@
 /node_modules
 /keys.js
+/helloworld-b026e-9a51f042fb10.json
 
 # exclude everything in workspaces
 /workspaces/*
