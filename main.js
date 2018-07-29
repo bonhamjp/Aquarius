@@ -26,7 +26,6 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 app.use(express.static("workspaces"));
 app.use(express.static("node_modules/xterm/dist"));
-app.use(express.static("node_modules/dialogflow/src"));
 
 // set up OAuth
 auth(passport);
