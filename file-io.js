@@ -1,9 +1,6 @@
 const fs = require("fs"),
   ffmpeg = require('fluent-ffmpeg');
 
-// setup ffmpeg command
-// var ffmpegC = fluentFfmpeg();
-
 const ROOT_SPACE = "./workspaces/";
 
 // helper for building namespaced project path
