@@ -226,7 +226,6 @@ app.post("/sendToDialogflow", function(req, res){
 	const projectId = 'helloworld-b026e';
 	const sessionId = '123';
 	const query = req.body["content"];
-	//const query = req.body["content"];
 	const languageCode = 'en-US';
 	
 	//Instantiate a Dialogflow client
