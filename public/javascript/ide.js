@@ -199,7 +199,10 @@ function createChatBox() {
 
       // write message to chat
       logChatMessage(user, MESSAGE_SOURCES.OUTGOING, message);
-      
+     
+      //send message to dialogflow
+      sendDialogFlow(message);
+
       // clear message box
       $("#message-input").val("");
     }
@@ -241,6 +244,22 @@ function writeToChat(user, source, content, timeStamp) {
   // scroll to bottom of chat box
   var chatContainer = document.getElementById("chat-history-container");
   chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+//sends message to dialogflow
+function sendDialogFlow(content){
+
+  //ajax call to server	 
+  $.ajax({
+    type: "POST",
+    url: "/sendToDialogFlow",
+    data: { content: content }
+  }).done(function(data) {
+    //pass dialogflow response to chat window
+    var user = "videBot";
+    logChatMessage(user, MESSAGE_SOURCES.INCOMING, data);
+  });
+
 }
 
 // handlers for acting on data read from files
