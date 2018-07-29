@@ -288,3 +288,72 @@ $(document).ready(function() {
     createChatBox();
   }
 });
+
+
+//voice capture and display
+document.addEventListener("DOMContentLoaded", function(event) {
+	var recorder = document.getElementById("recorder");
+	var stop = document.getElementById("stop");
+	if(navigator.mediaDevices){
+		//add constraints object
+		var constraints = { audio: true};
+		var chunks = [];
+		//call getUserMedia, then the magic
+		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream){
+			// var context = new AudioContext();
+			// var source = context.createMediaStreamSource(mediaStream);
+			// var processor = context.createScriptProcessor(1024, 1, 1);
+			var mediaRecorder = new MediaRecorder(mediaStream);
+			console.log(mediaRecorder.state);
+			recorder.onclick = function(){
+				mediaRecorder.start();
+				console.log(mediaRecorder.state);
+				
+			}
+			
+			stop.onclick = function(){
+				mediaRecorder.stop();
+				console.log(mediaRecorder.state);
+			}
+			
+			mediaRecorder.onstop = function(e) {
+				var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+				var reader = new FileReader();
+				reader.readAsBinaryString(blob); 
+				reader.onloadend = function() {
+					writeFlacFile("recording.flac", "voice", reader.result);
+				}
+
+				chunks = [];
+
+			}
+			// asynchronous flac file write
+			function writeFlacFile(fileName, folder, content) {
+			  $.ajax({
+				type: "POST",
+				url: "/writeflac/" + fileName + "/" + folder,
+				data: { content: content }
+			  }).done(function(data) {
+				//1 sec delay to wait for file write to finish on server
+				setTimeout(function(){$.get("/voice_api", function(data, status){
+									var user = $("#chat-box").data("display-name");
+									 // get time stamp
+									var date = new Date();
+									var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+									var content = data;
+									// write in chat box
+									writeToChat(user, MESSAGE_SOURCES.OUTGOING, content, timeStampString);
+				});}, 1000);
+				
+			  });
+			}
+						
+			mediaRecorder.ondataavailable = function(e) {
+				chunks.push(e.data);
+			}		
+			
+		}).catch(function(err){
+			console.log("yikes, and err!" + err.message);
+		});
+	}
+});
