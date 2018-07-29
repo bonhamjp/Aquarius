@@ -13,7 +13,6 @@ const express = require("express"),
     keys = require("./keys"),
     dirTree = require("./dir-tree"),
     fileIO = require("./file-io"),
-	multer  = require('multer'),
 	ffmpeg = require('ffmpeg'),
 	speech = require('@google-cloud/speech'),
 	fs = require('fs');
