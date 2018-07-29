@@ -114,8 +114,8 @@ function writeFile(fileName, folder, content) {
   });
 }
 
-// asynchronous binary file write
-function writeBinaryFile(fileName, folder, content) {
+// asynchronous flac file write
+function writeFlacFile(fileName, folder, content) {
   $.ajax({
     type: "POST",
     url: "/writeflac/" + fileName + "/" + folder,
