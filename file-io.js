@@ -1,4 +1,8 @@
-const fs = require("fs");
+const fs = require("fs"),
+  ffmpeg = require('fluent-ffmpeg');
+
+// setup ffmpeg command
+// var ffmpegC = fluentFfmpeg();
 
 const ROOT_SPACE = "./workspaces/";
 
@@ -37,15 +41,20 @@ function writeUserFile(fileName, fileContent, namespace, project) {
   });
 }
 
-function writeBinaryUserFile(fileName, fileContent, namespace, project) {
+function writeFlacUserFile(fileName, fileContent, namespace, project) {
   var path = filePath(fileName, namespace, project);
 
-  // write value over file
+  // write audio file, encoded with opus, from front end
   fs.writeFile(path, fileContent, "binary", function (err) {
     if (err) {
       throw err;
     }
   });
+
+  // convert to flac, using ffmpeg
+  var command = ffmpeg(path);
+  command.audioCodec('flac');
+  command.save(path);
 }
 
 
@@ -139,12 +148,12 @@ module.exports = {
   },
 
   // writes files to user namespace
-  writeBinaryFile: function(fileName, fileContent, namespace, project) {
+  writeFlacFile: function(fileName, fileContent, namespace, project) {
     // setup project, if it does not exist
     this.buildProject(namespace, project);
 
     // write data to file
-    writeBinaryUserFile(fileName, fileContent, namespace, project);
+    writeFlacUserFile(fileName, fileContent, namespace, project);
   },
 
 

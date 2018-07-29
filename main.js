@@ -171,7 +171,7 @@ app.post("/write/:fileName/:folder", (req, res) => {
 });
 
 // write file
-app.post("/writebinary/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, res) => {
+app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "1mb" }), (req, res) => {
   if(req.session.token) {
     res.cookie("token", req.session.token);
 
@@ -182,7 +182,7 @@ app.post("/writebinary/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, 
       var fileContent = req.body["content"];
 
       // write file to user namespace
-      fileIO.writeBinaryFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
+      fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
     }
 
     // send back plain text

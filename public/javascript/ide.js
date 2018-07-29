@@ -118,7 +118,7 @@ function writeFile(fileName, folder, content) {
 function writeBinaryFile(fileName, folder, content) {
   $.ajax({
     type: "POST",
-    url: "/writebinary/" + fileName + "/" + folder,
+    url: "/writeflac/" + fileName + "/" + folder,
     data: { content: content }
   }).done(function(data) {
     // TODO: display success status somewhere
@@ -193,112 +193,6 @@ function createNavTree() {
     }
   });
 }
-
-
-// navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-//   console.log("hi");
-// }
-
-// appends an audio element to playback and download recording
-function createAudioRecording(blobUrl) {
-  // const downloadEl = document.createElement('a');
-  // downloadEl.style = 'display: block';
-  // downloadEl.innerHTML = 'download';
-  // downloadEl.download = 'audio.webm';
-  // downloadEl.href = blobUrl;
-  // const audioEl = document.createElement('audio');
-  // audioEl.controls = true;
-  // const sourceEl = document.createElement('source');
-  // sourceEl.src = blobUrl;
-  // sourceEl.type = 'audio/webm';
-  // audioEl.appendChild(sourceEl);
-  // document.body.appendChild(audioEl);
-  // document.body.appendChild(downloadEl);
-
-  console.log(blobUrl);
-}
-
-var audioRecorder = navigator.mediaDevices.getUserMedia({ audio: true });
-var blob;
-audioRecorder.then(function(stream) {
-  // store streaming data chunks in array
-  const chunks = [];
-
-  // create media recorder instance to initialize recording
-  const recorder = new MediaRecorder(stream);
-
-  // function to be called when data is received
-  recorder.ondataavailable = e => {
-    // add stream data to chunks
-    chunks.push(e.data);
-
-    // if recorder is 'inactive' then recording has finished
-    if (recorder.state == 'inactive') {
-      // convert stream data chunks to a 'webm' audio format as a blob
-      blob = new Blob(chunks, { type: 'audio/flac' });
-
-      // setup reader to convert blob
-      var reader = new FileReader();
-
-      // read blob to binary
-      reader.onloadend = function() {
-        // convert to base64
-        base64data = reader.result;
-
-        // write to recording file
-        writeBinaryFile("recording.flac", "voice", base64data);
-
-        console.log(base64data);
-      }
-
-      // write blob to file
-      reader.readAsBinaryString(blob);
-
-      // console.log(blob);
-
-      // convert blob to URL so it can be assigned to a audio src attribute
-      // createAudioRecording(URL.createObjectURL(blob));
-    }
-  };
-
-  // start recording with 1 second time between receiving 'ondataavailable' events
-  recorder.start(1000);
-
-  // setTimeout to stop recording after 4 seconds
-  setTimeout(() => {
-    // this will trigger one final 'ondataavailable' event and set recorder state to 'inactive'
-    recorder.stop();
-  }, 4000);
-});
-
-function createVoiceRecorder() {
-  console.log("RECORD VOICES!!!");
-
-  // prevent voice recording form from submitting
-  $("#voice-record-form").on("submit", function(e) {
-    e.preventDefault();
-
-    // console.log("RECORD VOICE HERE!");
-
-    // var context = new AudioContext();
-    // var source = context.createMediaStreamSource(stream);
-    // var processor = context.createScriptProcessor(1024, 1, 1);
-    //
-    // source.connect(processor);
-    // processor.connect(context.destination);
-    //
-    // processor.onaudioprocess = function(e) {
-    //   // Do something with the data, i.e Convert this to WAV
-    //   console.log(e.inputBuffer);
-    // };
-
-    // window.AudioContext = window.AudioContext || window.webkitAudioContext;
-    // audio_context = new AudioContext();
-
-
-  });
-}
-
 
 function createChatBox() {
   // read chat history, and write into chat box
@@ -399,10 +293,6 @@ $(document).ready(function() {
   // only setup nave tree on ide page
   if($("#tree").length == 1) {
     createNavTree();
-  }
-  // only setup voice recorder on ide page
-  if($("#voice-record-form").length == 1) {
-    createVoiceRecorder();
   }
   // only setup chat box on ide page
   if($("#chat-box").length == 1) {
