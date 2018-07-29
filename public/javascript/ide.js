@@ -114,6 +114,17 @@ function writeFile(fileName, folder, content) {
   });
 }
 
+// asynchronous flac file write
+function writeFlacFile(fileName, folder, content) {
+  $.ajax({
+    type: "POST",
+    url: "/writeflac/" + fileName + "/" + folder,
+    data: { content: content }
+  }).done(function(data) {
+    // TODO: display success status somewhere
+  });
+}
+
 // asynchronous file write
 function appendFile(fileName, folder, content) {
   $.ajax({

@@ -1,4 +1,5 @@
-const fs = require("fs");
+const fs = require("fs"),
+  ffmpeg = require('fluent-ffmpeg');
 
 const ROOT_SPACE = "./workspaces/";
 
@@ -36,6 +37,23 @@ function writeUserFile(fileName, fileContent, namespace, project) {
     }
   });
 }
+
+function writeFlacUserFile(fileName, fileContent, namespace, project) {
+  var path = filePath(fileName, namespace, project);
+
+  // write audio file, encoded with opus, from front end
+  fs.writeFile(path, fileContent, "binary", function (err) {
+    if (err) {
+      throw err;
+    }
+  });
+
+  // convert to flac, using ffmpeg
+  var command = ffmpeg(path);
+  command.audioCodec('flac');
+  command.save(path);
+}
+
 
 function appendUserFile(fileName, fileContent, namespace, project) {
   var path = filePath(fileName, namespace, project);
@@ -88,6 +106,14 @@ module.exports = {
     if (!fs.existsSync(chatPath)) {
       fs.mkdirSync(chatPath);
     }
+
+    // voice recording path
+    var voicePath = path + "/voice";
+
+    // check if voice recording directory exists
+    if (!fs.existsSync(voicePath)) {
+      fs.mkdirSync(voicePath);
+    }
   },
 
   // builds file, if it does not yet exist
@@ -117,6 +143,16 @@ module.exports = {
     // write data to file
     writeUserFile(fileName, fileContent, namespace, project);
   },
+
+  // writes files to user namespace
+  writeFlacFile: function(fileName, fileContent, namespace, project) {
+    // setup project, if it does not exist
+    this.buildProject(namespace, project);
+
+    // write data to file
+    writeFlacUserFile(fileName, fileContent, namespace, project);
+  },
+
 
   // append to files within user namespace
   appendFile: function(fileName, fileContent, namespace, project) {
