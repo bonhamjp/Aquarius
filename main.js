@@ -11,17 +11,24 @@ const express = require("express"),
     pty = require("node-pty"),
     dialogflow = require('dialogflow'),
     path = require('path');
-    keys = require("./keys");
+    keys = require("./keys"),
     dirTree = require("./dir-tree"),
-    fileIO = require("./file-io");
-
+    fileIO = require("./file-io"),
+	ffmpeg = require('ffmpeg'),
+	speech = require('@google-cloud/speech'),
+	fs = require('fs');
+	
 // set up handlebars
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
 
 // set up bodyParser
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencode({extended: false}));
 app.use(bodyParser.json());
+
+//multer destination and type
+var upload = multer({ dest: "public/"});
+var type = upload.single("blob");
 
 // serve public assets
 app.use(express.static("public"));
@@ -81,6 +88,44 @@ app.use(cookieSession({
 }));
 
 app.use(cookieParser());
+
+//voice api
+// Creates a client
+const client = new speech.SpeechClient();
+
+app.get("/voice_api", (req, res) => {
+	// The name of the audio file to transcribe
+	const fileName = './workspaces/'+ req.session.passport.user.profile.id + '/voice/recording.flac';
+	//Reads a local audio file and converts it to base64
+	const file = fs.readFileSync(fileName);
+	const audioBytes = file.toString('base64');
+
+	// The audio file's encoding, sample rate in hertz, and BCP-47 language code
+	const audio = {
+	  content: audioBytes,
+	};
+	const config = {
+	  languageCode: 'en-US'
+	};
+	const request = {
+	  audio: audio,
+	  config: config,
+	};
+
+	// Detects speech in the audio file
+	client
+	  .recognize(request)
+	  .then(data => {
+		const response = data[0];
+		const transcription = response.results
+		  .map(result => result.alternatives[0].transcript)
+		  .join('\n');
+		res.send(transcription);
+	  })
+	  .catch(err => {
+		console.error('ERROR:', err);
+	  });
+});
 
 //landing page
 app.get("/", (req,res) => {
@@ -170,6 +215,29 @@ app.post("/write/:fileName/:folder", (req, res) => {
     res.send("Failure!");
   }
 });
+
+
+// write file
+app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, res) => {
+  if(req.session.token) {
+    res.cookie("token", req.session.token);
+     var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      var fileName = req.params.fileName;
+      var folder = req.params.folder;
+      var fileContent = req.body["content"];
+       // write file to user namespace
+      fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
+
+	}	
+     // send back plain text
+    res.send("Success");
+  } else {
+    // could not load session
+    res.send("Failure!");
+  }
+});
+
 
 // write file
 app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "1mb" }), (req, res) => {

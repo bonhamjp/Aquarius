@@ -106,6 +106,11 @@ module.exports = {
     if (!fs.existsSync(chatPath)) {
       fs.mkdirSync(chatPath);
     }
+	
+	// voice recording path
+    var voicePath = path + "/voice";
+	
+     // check if voice recording directory exists
 
     // voice recording path
     var voicePath = path + "/voice";
@@ -143,7 +148,6 @@ module.exports = {
     // write data to file
     writeUserFile(fileName, fileContent, namespace, project);
   },
-
   // writes files to user namespace
   writeFlacFile: function(fileName, fileContent, namespace, project) {
     // setup project, if it does not exist
@@ -152,7 +156,6 @@ module.exports = {
     // write data to file
     writeFlacUserFile(fileName, fileContent, namespace, project);
   },
-
 
   // append to files within user namespace
   appendFile: function(fileName, fileContent, namespace, project) {
