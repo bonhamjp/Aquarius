@@ -23,12 +23,8 @@ app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
 
 // set up bodyParser
-app.use(bodyParser.urlencode({extended: false}));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-
-//multer destination and type
-var upload = multer({ dest: "public/"});
-var type = upload.single("blob");
 
 // serve public assets
 app.use(express.static("public"));
