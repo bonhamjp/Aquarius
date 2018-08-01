@@ -17,7 +17,7 @@ const express = require("express"),
 	ffmpeg = require('ffmpeg'),
 	speech = require('@google-cloud/speech'),
 	fs = require('fs');
-	
+
 // set up handlebars
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
@@ -224,33 +224,8 @@ app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, re
       var fileContent = req.body["content"];
        // write file to user namespace
       fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
-
-	}	
+	}
      // send back plain text
-    res.send("Success");
-  } else {
-    // could not load session
-    res.send("Failure!");
-  }
-});
-
-
-// write file
-app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "1mb" }), (req, res) => {
-  if(req.session.token) {
-    res.cookie("token", req.session.token);
-
-    var emailAddr = req.session.passport.user.profile.emails[0].value;
-    if(authorizedEmail(emailAddr)) {
-      var fileName = req.params.fileName;
-      var folder = req.params.folder;
-      var fileContent = req.body["content"];
-
-      // write file to user namespace
-      fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
-    }
-
-    // send back plain text
     res.send("Success");
   } else {
     // could not load session
@@ -314,10 +289,10 @@ app.post("/sendToDialogflow", function(req, res){
 	const sessionId = '123';
 	const query = req.body["content"];
 	const languageCode = 'en-US';
-	
+
 	//Instantiate a Dialogflow client
 	const sessionClient = new dialogflow.SessionsClient();
-	
+
 	//Define session path
 	const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
