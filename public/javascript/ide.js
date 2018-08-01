@@ -300,7 +300,6 @@ function writeToChatHandler(data) {
 // sets up voice recording, and communication with google translate
 function createVoiceRecorder() {
   var recorder = document.getElementById("recorder");
-	var stop = document.getElementById("stop");
 
   if(navigator.mediaDevices){
 	   //add constraints object
@@ -313,15 +312,20 @@ function createVoiceRecorder() {
        var mediaRecorder = new MediaRecorder(mediaStream);
 
        // record when pressed
-       recorder.onclick = function() {
+		 recorder.onclick = function() {
+		 recorder.value = "Stop";
          mediaRecorder.start();
-       }
-
-       // stop recording when pressed
-       stop.onclick = function() {
-         mediaRecorder.stop();
-       }
-
+		 }
+		 
+		 mediaRecorder.onstart = function(e){
+		   // stop recording when pressed
+		   recorder.onclick = function() {
+			 recorder.value = "Record";
+			 mediaRecorder.stop();
+		   }
+		 }
+	
+	   
        // process media when stopped
        mediaRecorder.onstop = function(e) {
          // set recording format
@@ -336,7 +340,13 @@ function createVoiceRecorder() {
          }
 
          chunks = [];
-			}
+		 
+		 //reset mediaRecorder settings
+		 recorder.onclick = function() {
+		 recorder.value = "Stop";
+         mediaRecorder.start();
+		 }
+		}
 
       // asynchronous flac file write
       function writeFlacFile(fileName, folder, content) {
