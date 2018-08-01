@@ -310,7 +310,7 @@ app.get("/auth/google/callback",
 //sends text to dialogflow
 app.post("/sendToDialogflow", function(req, res){
 	//create variables
-	const projectId = 'helloworld-b026e';
+	const projectId = 'final-176901';
 	const sessionId = '123';
 	const query = req.body["content"];
 	const languageCode = 'en-US';
