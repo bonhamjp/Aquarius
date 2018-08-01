@@ -297,11 +297,10 @@ function writeToChatHandler(data) {
   }
 }
 
-
-
+// sets up voice recording, and communication with google translate
 function createVoiceRecorder() {
-  var recorder = $("recorder"); // document.getElementById("recorder");
-	var stop = $("stop"); // document.getElementById("stop");
+  var recorder = document.getElementById("recorder");
+	var stop = document.getElementById("stop");
 
   if(navigator.mediaDevices){
 	   //add constraints object
@@ -316,26 +315,26 @@ function createVoiceRecorder() {
        // record when pressed
        recorder.onclick = function() {
          mediaRecorder.start();
-         // console.log(mediaRecorder.state);
        }
 
        // stop recording when pressed
        stop.onclick = function() {
          mediaRecorder.stop();
-         // console.log(mediaRecorder.state);
        }
 
        // process media when stopped
        mediaRecorder.onstop = function(e) {
+         // set recording format
          var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
-         var reader = new FileReader();
 
+         // read recorded value to binary
+         var reader = new FileReader();
          reader.readAsBinaryString(blob);
          reader.onloadend = function() {
+           // send to back end to be saved and converted
            writeFlacFile("recording.flac", "voice", reader.result);
          }
 
-         // not sure what this is for??
          chunks = [];
 			}
 
@@ -346,29 +345,24 @@ function createVoiceRecorder() {
           url: "/writeflac/" + fileName + "/" + folder,
           data: { content: content }
         }).done(function(data) {
-          //1 sec delay to wait for file write to finish on server
-          setTimeout(function(){$.get("/voice_api", function(data, status){
+            // username
             var user = $("#chat-box").data("display-name");
 
-            // get time stamp
-            var date = new Date();
-            var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
-            var content = data;
             // write in chat box
-            writeToChat(user, MESSAGE_SOURCES.OUTGOING, content, timeStampString);
-				});}, 1000);
+            logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
 
-			  });
-			}
+            //send message to dialogflow
+            sendDialogFlow(data);
+          });
+        }
 
-			mediaRecorder.ondataavailable = function(e) {
-				chunks.push(e.data);
-			}
-
-		}).catch(function(err){
-			console.log("yikes, an err!" + err.message);
-		});
-	}
+      mediaRecorder.ondataavailable = function(e) {
+        chunks.push(e.data);
+      }
+    }).catch(function(err){
+      console.log("yikes, an err!" + err.message);
+    });
+  }
 }
 
 // setup ide after document is ready

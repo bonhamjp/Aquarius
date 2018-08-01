@@ -38,22 +38,26 @@ function writeUserFile(fileName, fileContent, namespace, project) {
   });
 }
 
-function writeFlacUserFile(fileName, fileContent, namespace, project) {
+function writeFlacUserFileWithHandler(fileName, fileContent, namespace, project, handler) {
   var path = filePath(fileName, namespace, project);
 
   // write audio file, encoded with opus, from front end
-  fs.writeFile(path, fileContent, "binary", function (err) {
+  fs.writeFile(path, fileContent, "binary", function (err, data) {
     if (err) {
       throw err;
+    } else {
+      // convert to flac, using ffmpeg
+      var command = ffmpeg(path);
+      command.audioCodec("flac");
+
+      // call handler after conversion
+      command.save(path).on('end', function() {
+        // console.log('Screenshots taken');
+        handler();
+      });
     }
   });
-
-  // convert to flac, using ffmpeg
-  var command = ffmpeg(path);
-  command.audioCodec('flac');
-  command.save(path);
 }
-
 
 function appendUserFile(fileName, fileContent, namespace, project) {
   var path = filePath(fileName, namespace, project);
@@ -106,10 +110,10 @@ module.exports = {
     if (!fs.existsSync(chatPath)) {
       fs.mkdirSync(chatPath);
     }
-	
+
 	// voice recording path
     var voicePath = path + "/voice";
-	
+
      // check if voice recording directory exists
 
     // voice recording path
@@ -148,13 +152,14 @@ module.exports = {
     // write data to file
     writeUserFile(fileName, fileContent, namespace, project);
   },
-  // writes files to user namespace
-  writeFlacFile: function(fileName, fileContent, namespace, project) {
+
+  // writes flac files to user namespace, with handler
+  writeFlacFileWithHandler: function(fileName, fileContent, namespace, project, handler) {
     // setup project, if it does not exist
     this.buildProject(namespace, project);
 
-    // write data to file
-    writeFlacUserFile(fileName, fileContent, namespace, project);
+    // write data to file, then call handler
+    writeFlacUserFileWithHandler(fileName, fileContent, namespace, project, handler);
   },
 
   // append to files within user namespace
