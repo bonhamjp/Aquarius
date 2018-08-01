@@ -1,29 +1,29 @@
 //set up express
 const express = require("express"),
-    app = express(),
-    ws = require("express-ws")(app),
-    handlebars = require("express-handlebars").create({ defaultLayout: "main" }),
-    bodyParser = require("body-parser"),
-    passport = require("passport"),
-    auth = require("./auth"),
-    cookieParser = require("cookie-parser"),
-    cookieSession = require("cookie-session"),
-    pty = require("node-pty"),
-    dialogflow = require('dialogflow'),
-    path = require('path');
-    keys = require("./keys"),
-    dirTree = require("./dir-tree"),
-    fileIO = require("./file-io"),
+  app = express(),
+  ws = require("express-ws")(app),
+  handlebars = require("express-handlebars").create({ defaultLayout: "main" }),
+  bodyParser = require("body-parser"),
+  passport = require("passport"),
+  auth = require("./auth"),
+  cookieParser = require("cookie-parser"),
+  cookieSession = require("cookie-session"),
+  pty = require("node-pty"),
+  dialogflow = require('dialogflow'),
+  path = require('path');
+  keys = require("./keys"),
+  dirTree = require("./dir-tree"),
+  fileIO = require("./file-io"),
 	ffmpeg = require('ffmpeg'),
 	speech = require('@google-cloud/speech'),
 	fs = require('fs');
-	
+
 // set up handlebars
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
 
 // set up bodyParser
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use(bodyParser.json());
 
 // serve public assets
@@ -85,43 +85,9 @@ app.use(cookieSession({
 
 app.use(cookieParser());
 
-//voice api
+// voice api
 // Creates a client
 const client = new speech.SpeechClient();
-
-app.get("/voice_api", (req, res) => {
-	// The name of the audio file to transcribe
-	const fileName = './workspaces/'+ req.session.passport.user.profile.id + '/voice/recording.flac';
-	//Reads a local audio file and converts it to base64
-	const file = fs.readFileSync(fileName);
-	const audioBytes = file.toString('base64');
-
-	// The audio file's encoding, sample rate in hertz, and BCP-47 language code
-	const audio = {
-	  content: audioBytes,
-	};
-	const config = {
-	  languageCode: 'en-US'
-	};
-	const request = {
-	  audio: audio,
-	  config: config,
-	};
-
-	// Detects speech in the audio file
-	client
-	  .recognize(request)
-	  .then(data => {
-		const response = data[0];
-		const transcription = response.results
-		  .map(result => result.alternatives[0].transcript)
-		  .join('\n');
-		res.send(transcription);
-	  })
-	  .catch(err => {
-		console.error('ERROR:', err);
-	  });
-});
 
 //landing page
 app.get("/", (req,res) => {
@@ -212,46 +178,52 @@ app.post("/write/:fileName/:folder", (req, res) => {
   }
 });
 
-
 // write file
-app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "10mb" }), (req, res) => {
+app.post("/writeflac/:fileName/:folder", (req, res) => {
   if(req.session.token) {
     res.cookie("token", req.session.token);
-     var emailAddr = req.session.passport.user.profile.emails[0].value;
-    if(authorizedEmail(emailAddr)) {
-      var fileName = req.params.fileName;
-      var folder = req.params.folder;
-      var fileContent = req.body["content"];
-       // write file to user namespace
-      fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
-
-	}	
-     // send back plain text
-    res.send("Success");
-  } else {
-    // could not load session
-    res.send("Failure!");
-  }
-});
-
-
-// write file
-app.post("/writeflac/:fileName/:folder", bodyParser({ limit: "1mb" }), (req, res) => {
-  if(req.session.token) {
-    res.cookie("token", req.session.token);
-
     var emailAddr = req.session.passport.user.profile.emails[0].value;
+
     if(authorizedEmail(emailAddr)) {
       var fileName = req.params.fileName;
       var folder = req.params.folder;
       var fileContent = req.body["content"];
 
-      // write file to user namespace
-      fileIO.writeFlacFile(fileName, fileContent, req.session.passport.user.profile.id, folder);
-    }
+      // write flac file in namespace, then get response from google translate
+      fileIO.writeFlacFileWithHandler(fileName, fileContent, req.session.passport.user.profile.id, folder, function() {
+        // The name of the audio file to transcribe
+        const fileName = './workspaces/'+ req.session.passport.user.profile.id + '/voice/recording.flac';
 
-    // send back plain text
-    res.send("Success");
+        //Reads a local audio file and converts it to base64
+        const file = fs.readFileSync(fileName);
+        const audioBytes = file.toString('base64');
+
+        // The audio file's encoding, sample rate in hertz, and BCP-47 language code
+        const audio = {
+          content: audioBytes,
+        };
+        const config = {
+          languageCode: 'en-US'
+        };
+        const request = {
+          audio: audio,
+          config: config,
+        };
+
+        // Detects speech from the audio file
+        client
+          .recognize(request)
+          .then(data => {
+            const response = data[0];
+            const transcription = response.results.map(result => result.alternatives[0].transcript).join('\n');
+
+            res.send(transcription);
+          })
+          .catch(err => {
+            console.error('ERROR:', err);
+          });
+      });
+    }
   } else {
     // could not load session
     res.send("Failure!");
@@ -314,10 +286,10 @@ app.post("/sendToDialogflow", function(req, res){
 	const sessionId = '123';
 	const query = req.body["content"];
 	const languageCode = 'en-US';
-	
+
 	//Instantiate a Dialogflow client
 	const sessionClient = new dialogflow.SessionsClient();
-	
+
 	//Define session path
 	const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
@@ -336,21 +308,21 @@ app.post("/sendToDialogflow", function(req, res){
 	sessionClient
 	  .detectIntent(request)
 	  .then(responses => {
-		  console.log('Detected Intent');
-		  const result = responses[0].queryResult;
-                  const chat = result.fulfillmentText;
-		  console.log(`	Query: ${result.queryText}`);
-		  console.log(` Response: ${result.fulfillmentText}`);
-		  if(result.intent){
-			  console.log(` Intent: ${result.intent.displayName}`);
-		  }else{
-			  console.log(`No intent matched.`);
+      console.log('Detected Intent');
+      const result = responses[0].queryResult;
+      const chat = result.fulfillmentText;
+      console.log(`	Query: ${result.queryText}`);
+      console.log(` Response: ${result.fulfillmentText}`);
+      if(result.intent){
+        console.log(` Intent: ${result.intent.displayName}`);
+      } else {
+        console.log(`No intent matched.`);
 		  }
-		  res.send(chat);
+      res.send(chat);
 	  })
-	  .catch(err => {
-		  console.error('ERROR: ', err);
-	  });
+    .catch(err => {
+      console.error('ERROR: ', err);
+    });
 });
 
 // use port specified in command, if it exists

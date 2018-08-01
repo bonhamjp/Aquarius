@@ -210,7 +210,7 @@ function createChatBox() {
 
       // write message to chat
       logChatMessage(user, MESSAGE_SOURCES.OUTGOING, message);
-     
+
       //send message to dialogflow
       sendDialogFlow(message);
 
@@ -259,8 +259,7 @@ function writeToChat(user, source, content, timeStamp) {
 
 //sends message to dialogflow
 function sendDialogFlow(content){
-
-  //ajax call to server	 
+  //ajax call to server
   $.ajax({
     type: "POST",
     url: "/sendToDialogFlow",
@@ -270,7 +269,6 @@ function sendDialogFlow(content){
     var user = "videBot";
     logChatMessage(user, MESSAGE_SOURCES.INCOMING, data);
   });
-
 }
 
 // handlers for acting on data read from files
@@ -299,6 +297,74 @@ function writeToChatHandler(data) {
   }
 }
 
+// sets up voice recording, and communication with google translate
+function createVoiceRecorder() {
+  var recorder = document.getElementById("recorder");
+	var stop = document.getElementById("stop");
+
+  if(navigator.mediaDevices){
+	   //add constraints object
+     var constraints = { audio: true };
+     var chunks = [];
+
+     //call getUserMedia, then the magic
+     navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
+       // setup media recorder
+       var mediaRecorder = new MediaRecorder(mediaStream);
+
+       // record when pressed
+       recorder.onclick = function() {
+         mediaRecorder.start();
+       }
+
+       // stop recording when pressed
+       stop.onclick = function() {
+         mediaRecorder.stop();
+       }
+
+       // process media when stopped
+       mediaRecorder.onstop = function(e) {
+         // set recording format
+         var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+
+         // read recorded value to binary
+         var reader = new FileReader();
+         reader.readAsBinaryString(blob);
+         reader.onloadend = function() {
+           // send to back end to be saved and converted
+           writeFlacFile("recording.flac", "voice", reader.result);
+         }
+
+         chunks = [];
+			}
+
+      // asynchronous flac file write
+      function writeFlacFile(fileName, folder, content) {
+        $.ajax({
+          type: "POST",
+          url: "/writeflac/" + fileName + "/" + folder,
+          data: { content: content }
+        }).done(function(data) {
+            // username
+            var user = $("#chat-box").data("display-name");
+
+            // write in chat box
+            logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
+
+            //send message to dialogflow
+            sendDialogFlow(data);
+          });
+        }
+
+      mediaRecorder.ondataavailable = function(e) {
+        chunks.push(e.data);
+      }
+    }).catch(function(err){
+      console.log("yikes, an err!" + err.message);
+    });
+  }
+}
+
 // setup ide after document is ready
 $(document).ready(function() {
   // only setup terminal on ide page
@@ -317,73 +383,9 @@ $(document).ready(function() {
   if($("#chat-box").length == 1) {
     createChatBox();
   }
-});
-
-
-//voice capture and display
-document.addEventListener("DOMContentLoaded", function(event) {
-	var recorder = document.getElementById("recorder");
-	var stop = document.getElementById("stop");
-	if(navigator.mediaDevices){
-		//add constraints object
-		var constraints = { audio: true};
-		var chunks = [];
-		//call getUserMedia, then the magic
-		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream){
-			// var context = new AudioContext();
-			// var source = context.createMediaStreamSource(mediaStream);
-			// var processor = context.createScriptProcessor(1024, 1, 1);
-			var mediaRecorder = new MediaRecorder(mediaStream);
-			console.log(mediaRecorder.state);
-			recorder.onclick = function(){
-				mediaRecorder.start();
-				console.log(mediaRecorder.state);
-				
-			}
-			
-			stop.onclick = function(){
-				mediaRecorder.stop();
-				console.log(mediaRecorder.state);
-			}
-			
-			mediaRecorder.onstop = function(e) {
-				var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
-				var reader = new FileReader();
-				reader.readAsBinaryString(blob); 
-				reader.onloadend = function() {
-					writeFlacFile("recording.flac", "voice", reader.result);
-				}
-
-				chunks = [];
-
-			}
-			// asynchronous flac file write
-			function writeFlacFile(fileName, folder, content) {
-			  $.ajax({
-				type: "POST",
-				url: "/writeflac/" + fileName + "/" + folder,
-				data: { content: content }
-			  }).done(function(data) {
-				//1 sec delay to wait for file write to finish on server
-				setTimeout(function(){$.get("/voice_api", function(data, status){
-									var user = $("#chat-box").data("display-name");
-									 // get time stamp
-									var date = new Date();
-									var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
-									var content = data;
-									// write in chat box
-									writeToChat(user, MESSAGE_SOURCES.OUTGOING, content, timeStampString);
-				});}, 1000);
-				
-			  });
-			}
-						
-			mediaRecorder.ondataavailable = function(e) {
-				chunks.push(e.data);
-			}		
-			
-		}).catch(function(err){
-			console.log("yikes, and err!" + err.message);
-		});
-	}
+  // only setup voice recorder on ide page
+  // only setup chat box on ide page
+  if($("#chat-box").length == 1) {
+    createVoiceRecorder();
+  }
 });
