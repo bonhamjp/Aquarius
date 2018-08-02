@@ -302,19 +302,19 @@ function createVoiceRecorder() {
   var recorder = document.getElementById("recorder");
 
   if(navigator.mediaDevices){
-	   //add constraints object
-     var constraints = { audio: true };
-     var chunks = [];
+	//add constraints object
+	var constraints = { audio: true };
+	var chunks = [];
 
      //call getUserMedia, then the magic
      navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-       // setup media recorder
-       var mediaRecorder = new MediaRecorder(mediaStream);
+		// setup media recorder
+		var mediaRecorder = new MediaRecorder(mediaStream);
 
-       // record when pressed
+		// record when pressed
 		 recorder.onclick = function() {
-		 recorder.value = "Stop";
-         mediaRecorder.start();
+			 recorder.value = "Stop";
+			 mediaRecorder.start();
 		 }
 		 
 		 mediaRecorder.onstart = function(e){
@@ -323,7 +323,7 @@ function createVoiceRecorder() {
 			 recorder.value = "Record";
 			 mediaRecorder.stop();
 		   }
-		 }
+	}
 	
 	   
        // process media when stopped
@@ -341,12 +341,12 @@ function createVoiceRecorder() {
 
          chunks = [];
 		 
-		 //reset mediaRecorder settings
-		 recorder.onclick = function() {
-		 recorder.value = "Stop";
-         mediaRecorder.start();
-		 }
-		}
+	//reset mediaRecorder settings
+	recorder.onclick = function() {
+		recorder.value = "Stop";
+         	mediaRecorder.start();
+	}
+}
 
       // asynchronous flac file write
       function writeFlacFile(fileName, folder, content) {
