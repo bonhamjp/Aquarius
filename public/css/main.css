@@ -3,12 +3,10 @@
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
-
-.border{
-	border: solid 1px #6x757d;
-	padding: 10px;
+.nopadding{
+	padding: 0 !important;
+	margin: 0 !important;
 }
-
 #title{
 	text-align:center;
 	margin:auto;
@@ -35,13 +33,13 @@
   padding-top:10px;
   color:red;
 }
-
 #editor {
 	height: 300px;
 }
 
 #chat-box {
 	height: 100%;
+	margin-left: 0px;
 }
 
 #chat-history-container {
@@ -59,11 +57,12 @@
 }
 
 #message-form {
-	height: 30%;
+	height: 15%;
+	margin-left: 0px;
 }
 
 #message-input {
-	height: 100px;
+	height: 50px;
 }
 
 #chat-history {
