@@ -298,6 +298,28 @@ function displayNavTree() {
   });
 }
 
+function navTreeFileExists(filename) {
+  var fileFound = false;
+  $(".fancytree-title").each(function() {
+    if($(this).text() == filename) {
+      fileFound = true;
+    }
+  });
+
+  return fileFound;
+}
+
+function navTreeChangeToFile(filename) {
+  var fileFound = false;
+  $(".fancytree-title").each(function() {
+    if($(this).text() == filename) {
+      $(this).click();
+    }
+  });
+
+  return fileFound;
+}
+
 function createChatBox() {
   // read chat history, and write into chat box
   readFile("chat.json", "chat", writeToChatHandler);
@@ -480,8 +502,6 @@ function createVoiceRecorder() {
   }
 }
 
-
-
 // dialogflow error messaging
 function logDialogflowError(errorMessage) {
   // log and pass dialogflow error response to chat window
@@ -491,29 +511,36 @@ function logDialogflowError(errorMessage) {
 
 // suite of dialogflow handlers
 function dialogflowCreateFileHandler(filename) {
-  if(filename != null) {
+  if(filename != null && !navTreeFileExists(filename)) {
     // create new file
     terminalCreateFile(filename);
 
     // refresh nav tree
     updateNavTree();
   } else {
-    logDialogflowError("You must specify a file.")
+    logDialogflowError("The file already exists. Sorry! Please try again.");
   }
 }
 
 function dialogflowDeleteFileHandler(filename) {
-  if(filename != null) {
+  if(filename != null && navTreeFileExists(filename)) {
     // delete file
     terminalDeleteFile(filename);
 
     // refresh nav tree
     updateNavTree();
+  } else {
+    logDialogflowError("The file does not exist. Sorry! Please try again.");
   }
 }
 
 function dialogflowChangeFileHandler(filename) {
-
+  if(filename != null && navTreeFileExists(filename)) {
+    // switch to file
+    navTreeChangeToFile(filename);
+  } else {
+    logDialogflowError("The file does not exist. Sorry! Please try again.");
+  }
 }
 
 function dialogflowSaveFileHandler() {
@@ -524,16 +551,44 @@ function dialogflowCompileFileHandler() {
   $("#build-source").click();
 }
 
-function dialogflowAddVariableHandler() {
-
+function dialogflowAddNewLineHandler(row) {
+  if(row != null) {
+    aceAddNewLine(row);
+  } else {
+    logDialogflowError("You need to specify which row you would like to add a newline to. Sorry! Please try again.");
+  }
 }
 
-function dialogflowAddForLoopHandler() {
+function dialogflowAddVariableHandler(row, type, name, value) {
+  if(row != null && type != null && name != null && value != null) {
+    var lines = []
+    lines.push(type + " " + name + " = " + value + ";");
 
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create a variable. Sorry! Please try again.");
+  }
 }
 
-function dialogflowRemoveLineHandler() {
+function dialogflowAddForLoopHandler(row, counterVar, startingNumber, endingNumber, incrementor) {
+  if(row != null && counterVar != null && startingNumber != null && endingNumber != null && incrementor != null) {
+    var lines = []
+    lines.push("for (int " + counterVar + " = " + startingNumber + ";" + counterVar + " < " + endingNumber + ";" + counterVar + incrementor + ") {");
+    lines.push("// ...");
+    lines.push("}");
 
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create a for loop. Sorry! Please try again.");
+  }
+}
+
+function dialogflowRemoveLineHandler(row) {
+  if(row != null) {
+    aceRemoveLineAt(row);
+  } else {
+    logDialogflowError("You need to specify which row you would like to remove. Sorry! Please try again.");
+  }
 }
 
 // handles all actions returned from dialogflow
@@ -560,16 +615,19 @@ function dialogflowHandler(command) {
       dialogflowCompileFileHandler();
       break;
 
+    case "AddNewLine":
+      dialogflowAddNewLineHandler(command.row);
+
     case "AddVariable":
-      dialogflowAddVariableHandler();
+      dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
       break;
 
-    case "AddForLop":
-      dialogflowAddForLoopHandler();
+    case "AddForLoop":
+      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.endingNumber, command.incrementor);
       break;
 
     case "RemoveLine":
-      dialogflowRemoveLineHandler();
+      dialogflowRemoveLineHandler(command.row);
       break;
 
     default:
