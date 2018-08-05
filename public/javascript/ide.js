@@ -40,7 +40,7 @@ function createTerminal() {
     });
 
     // cd into project, after connection to the terminal has been established
-    cdProject();
+    terminalCdProject();
   }
 
   $(window).resize(function() {
@@ -49,8 +49,9 @@ function createTerminal() {
   });
 }
 
-// move user to project
-function cdProject() {
+
+// terminal commands
+function terminalSetWorkingDirectory() {
   // retrieve user workspace folder name
   $tree = $("#tree");
   var namespace = $tree.data("namespace");
@@ -58,8 +59,33 @@ function cdProject() {
 
   // cd to project
   socket.send("cd ./workspaces/" + namespace + "/" + project + "\n");
+}
+
+// move user to project
+function terminalCdProject() {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
   // clear terminal, so user starts fresh
   socket.send("clear \n");
+}
+
+// create file
+function terminalCreateFile(filename) {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
+  // make file
+  socket.send("touch " + filename + "\n");
+}
+
+// delete file
+function terminalDeleteFile(filename) {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
+  // make file
+  socket.send("rm " + filename + "\n");
 }
 
 // global values, to allow communication between editor and nav tree
@@ -98,7 +124,6 @@ function readFile(fileName, folder, handler) {
     url: "/read/" + fileName + "/" + folder
   }).done(function(data) {
     // write contents of file to editor
-    // editor.setValue(data);
     handler(data);
   });
 }
@@ -168,6 +193,22 @@ function buildSource() {
 }
 
 function createNavTree() {
+  updateNavTree();
+}
+
+// syncs nav tree with current file structure, and loads
+function updateNavTree() {
+  //ajax call to server
+  $.ajax({
+    type: "POST",
+    url: "/syncNavTree"
+  }).done(function(data) {
+    // display current file structure
+    displayNavTree();
+  });
+}
+
+function displayNavTree() {
   // retrieve user workspace folder name
   $tree = $("#tree");
   var namespace = $tree.data("namespace");
@@ -193,6 +234,8 @@ function createNavTree() {
     }
   });
 }
+
+
 
 function createChatBox() {
   // read chat history, and write into chat box
@@ -220,7 +263,7 @@ function createChatBox() {
   });
 }
 
-const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1 };
+const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1, ERROR: 2 };
 function logChatMessage(user, source, content) {
   // get time stamp
   var date = new Date();
@@ -241,6 +284,8 @@ function writeToChat(user, source, content, timeStamp) {
     messageClass = "sent-message";
   } else if(source == MESSAGE_SOURCES.INCOMING) {
     messageClass = "received-message";
+  } else if(source == MESSAGE_SOURCES.ERROR) {
+    messageClass = "error-message";
   }
 
   // append list item to li
@@ -301,52 +346,51 @@ function writeToChatHandler(data) {
 function createVoiceRecorder() {
   var recorder = document.getElementById("recorder");
 
-  if(navigator.mediaDevices){
-	//add constraints object
-	var constraints = { audio: true };
-	var chunks = [];
+  if(navigator.mediaDevices) {
+  	//add constraints object
+  	var constraints = { audio: true };
+  	var chunks = [];
 
-     //call getUserMedia, then the magic
-     navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-		// setup media recorder
-		var mediaRecorder = new MediaRecorder(mediaStream);
+    //call getUserMedia, then the magic
+    navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
+      // setup media recorder
+      var mediaRecorder = new MediaRecorder(mediaStream);
 
-		// record when pressed
-		 recorder.onclick = function() {
-			 recorder.value = "Stop";
-			 mediaRecorder.start();
-		 }
-		 
-		 mediaRecorder.onstart = function(e){
-		   // stop recording when pressed
-		   recorder.onclick = function() {
-			 recorder.value = "Record";
-			 mediaRecorder.stop();
-		   }
-	}
-	
-	   
-       // process media when stopped
-       mediaRecorder.onstop = function(e) {
-         // set recording format
-         var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+      // record when pressed
+      recorder.onclick = function() {
+        recorder.value = "Stop";
+        mediaRecorder.start();
+      }
 
-         // read recorded value to binary
-         var reader = new FileReader();
-         reader.readAsBinaryString(blob);
-         reader.onloadend = function() {
-           // send to back end to be saved and converted
-           writeFlacFile("recording.flac", "voice", reader.result);
-         }
+      mediaRecorder.onstart = function(e){
+        // stop recording when pressed
+        recorder.onclick = function() {
+          recorder.value = "Record";
+          mediaRecorder.stop();
+        }
+      }
 
-         chunks = [];
-		 
-	//reset mediaRecorder settings
-	recorder.onclick = function() {
-		recorder.value = "Stop";
-         	mediaRecorder.start();
-	}
-}
+      // process media when stopped
+      mediaRecorder.onstop = function(e) {
+        // set recording format
+        var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+
+        // read recorded value to binary
+        var reader = new FileReader();
+        reader.readAsBinaryString(blob);
+        reader.onloadend = function() {
+          // send to back end to be saved and converted
+          writeFlacFile("recording.flac", "voice", reader.result);
+        }
+
+        chunks = [];
+
+        //reset mediaRecorder settings
+        recorder.onclick = function() {
+          recorder.value = "Stop";
+          mediaRecorder.start();
+        }
+      }
 
       // asynchronous flac file write
       function writeFlacFile(fileName, folder, content) {
@@ -355,16 +399,16 @@ function createVoiceRecorder() {
           url: "/writeflac/" + fileName + "/" + folder,
           data: { content: content }
         }).done(function(data) {
-            // username
-            var user = $("#chat-box").data("display-name");
+          // username
+          var user = $("#chat-box").data("display-name");
 
-            // write in chat box
-            logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
+          // write in chat box
+          logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
 
-            //send message to dialogflow
-            sendDialogFlow(data);
-          });
-        }
+          //send message to dialogflow
+          sendDialogFlow(data);
+        });
+      }
 
       mediaRecorder.ondataavailable = function(e) {
         chunks.push(e.data);
@@ -375,27 +419,126 @@ function createVoiceRecorder() {
   }
 }
 
+
+
+// ace text editor interface
+function aceAddLineAt(line, content) {
+  // must interact with editor session
+  var session = editor.session;
+
+  // location object
+  var location = { "row": (line - 1), "column": 0 };
+
+  session.insert(location, content);
+}
+
+function aceRemoveLineAt() {
+
+}
+
+// dialogflow error messaging
+function logDialogflowError(errorMessage) {
+  // log and pass dialogflow error response to chat window
+  var user = "videBot";
+  logChatMessage(user, MESSAGE_SOURCES.ERROR, errorMessage);
+}
+
+// suite of dialogflow handlers
+function dialogflowCreateFileHandler(filename) {
+  if(filename != null) {
+    // create new file
+    terminalCreateFile(filename);
+
+    // refresh nav tree
+    updateNavTree();
+  } else {
+    logDialogflowError("You must specify a file.")
+  }
+}
+
+function dialogflowDeleteFileHandler(filename) {
+  if(filename != null) {
+    // delete file
+    terminalDeleteFile(filename);
+
+    // refresh nav tree
+    updateNavTree();
+  }
+}
+
+function dialogflowChangeFileHandler(filename) {
+
+}
+
+function dialogflowSaveFileHandler() {
+  $("#save-file").click();
+}
+
+function dialogflowCompileFileHandler() {
+  $("#build-source").click();
+}
+
+function dialogflowAddVariableHandler() {
+
+}
+
+function dialogflowAddForLoopHandler() {
+
+}
+
+function dialogflowRemoveLineHandler() {
+
+}
+
+// handles all actions returned from dialogflow
+// command should be an object, with at least one property: { action: '' }
+function dialogflowHandler(command) {
+  switch(command.action) {
+    case "CreateFile":
+      dialogflowCreateFileHandler(command.filename);
+      break;
+
+    case "DeleteFile":
+      dialogflowDeleteFileHandler(command.filename);
+      break;
+
+    case "ChangeFile":
+      dialogflowChangeFileHandler(command.filename);
+      break;
+
+    case "SaveFile":
+      dialogflowSaveFileHandler();
+      break;
+
+    case "CompileFile":
+      dialogflowCompileFileHandler();
+      break;
+
+    case "AddVariable":
+      dialogflowAddVariableHandler();
+      break;
+
+    case "AddForLop":
+      dialogflowAddForLoopHandler();
+      break;
+
+    case "RemoveLine":
+      dialogflowRemoveLineHandler();
+      break;
+
+    default:
+      logDialogflowError("Command not understood. Sorry! Please try again.");
+  }
+}
+
 // setup ide after document is ready
 $(document).ready(function() {
-  // only setup terminal on ide page
-  if($("#terminal").length == 1) {
+  // setup ide specific elements on ide page
+  if($("#ide").length == 1) {
     createTerminal();
-  }
-  // only setup editor on page with editor element
-  if($("#editor").length == 1) {
     createEditor();
-  }
-  // only setup nave tree on ide page
-  if($("#tree").length == 1) {
     createNavTree();
-  }
-  // only setup chat box on ide page
-  if($("#chat-box").length == 1) {
     createChatBox();
-  }
-  // only setup voice recorder on ide page
-  // only setup chat box on ide page
-  if($("#chat-box").length == 1) {
     createVoiceRecorder();
   }
 });

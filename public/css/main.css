@@ -90,8 +90,12 @@
 	opacity: 0.5;
 }
 
-.received-message {
+.received-message, .error-message {
 	text-align: left;
+}
+
+.error-message .message-content {
+	color: red;
 }
 
 .sent-message {
