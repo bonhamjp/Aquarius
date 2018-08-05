@@ -1,45 +1,47 @@
+<div class="w3-bar w3-black">
+  <span class="w3-bar-item w3-center w3-xlarge">VIDE</span>
+  <a href="#" id="save-file" class="w3-bar-item w3-button"><i class="material-icons" style="font-size:36px">save</i></a>
+  <a href="#" id="build-source" class="w3-bar-item w3-button"><i class="material-icons" style="font-size:36px">play_circle_filled</i></a>
+  <a href="/logout" class="w3-bar-item w3-button w3-right"><i class="material-icons" style="font-size:36px">exit_to_app</i></a>
+</div>
 
-<nav class="navbar navbar-light bg-light">
-  <span class="navbar-brand mb-0 h1">Menu Bar</span>
-
-  <span class="navbar-brand mb-0 h1">
-    <button type="button" id="build-source">BUILD</button>
-    <button type="button" id="save-file">SAVE</button>
-  </span>
-</nav>
-<!--Greetings {{ display_name }}-->
 <div class="container-fluid">
   <div class="row">
-    <div class="col-2 border">
+    <div class="col-2 nopadding">
       <div class="file-tree">
-          <p>{{ project }}<p>
+	<div class = "w3-panel w3-center">
+	 <i class="fa fa-user-circle-o" style="font-size:48px"></i> 
+          <p>{{ project }}</p>
+	</div>
 		      <div id="tree" data-root-path="{{ root_path }}" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
 	    </div>
     </div>
-    <div class="col-8 border">
+    <div class="col-8 nopadding">
       <div id="editor-container">
         <div id="editor"></div>
       </div>
 
       <div id="terminal" data-aquarius-domain="{{ aquarius_domain }}" data-aquarius-port="{{ aquarius_port }}"></div>
     </div>
-    <div class="col-2 border">
+    <div class="col-2 nopadding">
       <div id="chat-box" data-display-name="{{ display_name }}">
         <div id="chat-history-container">
           <ul id="chat-history"></ul>
         </div>
-
-        <input type="button" id="recorder" value="Record" />
+        <div class = "w3-panel w3-center">
+        <button class="w3-button w3-padding-small w3-black" id="recorder">Record</button>
         <audio></audio>
+	</div>
 
         <div id="chat-message-form-container">
           <form id="message-form" action="#">
-            <textarea id="message-input"></textarea>
-            <input id="message-submit" type="submit" value="Send" />
+            <textarea placeholder="Optional Typing Input..." id="message-input"></textarea>
+	    <div class = "w3-panel w3-center">
+            <button class="w3-button w3-padding-small w3-black" id="message-submit">Send</button>
+	    </div>
           </form>
         </div>
       </div>
     </div>
   </div>
 </div>
-<a href="/logout">Logout</a>
