@@ -49,7 +49,6 @@ function createTerminal() {
   });
 }
 
-
 // terminal commands
 function terminalSetWorkingDirectory() {
   // retrieve user workspace folder name
@@ -116,6 +115,70 @@ function createEditor() {
   $(document).on("click", "#build-source", function() {
     buildSource();
   });
+}
+
+// ace text editor interface
+function aceFormat() {
+  // setup beautify
+  var beautify = ace.require("ace/ext/beautify");
+
+  // beatify the file
+  beautify.beautify(editor.session);
+}
+
+function aceAddLinesAt(row, lines) {
+  // must interact with editor session
+  var session = editor.session;
+
+  // number of lines to insert
+  var numberOfLinesToAdd = lines.length;
+
+  // add line by line
+  for(var i = 0;i < numberOfLinesToAdd;i++) {
+    // add a new line
+    aceExtendFileEnd();
+
+    // move existing lines down
+    session.moveLinesDown((row - 1), (session.getLength() - 1));
+
+    // insert line
+    session.insert({ "row": (row - 1), "column": 0 }, lines[i] + "\n");
+
+    // move to next line
+    row++;
+  }
+
+  // make sure everything is formatted correctly
+  aceFormat();
+}
+
+function aceExtendFileEnd() {
+  // must interact with editor session
+  var session = editor.session;
+
+  // add another line to file
+  session.insert({ "row": (session.getLength() + 1), "column": 0 }, "\n");
+}
+
+function aceAddNewLine(row) {
+  aceAddLinesAt(row, [""]);
+}
+
+function aceRemoveLineAt(row) {
+  // must interact with editor session
+  var session = editor.session;
+
+  // must use Range type to replace lines
+  var Range = require("ace/range").Range;
+
+  // replace with empty line
+  session.replace(new Range((row - 1), 0, (row -1), Number.MAX_VALUE), "");
+
+  // move remaining lines up
+  session.moveLinesUp((row), session.getLength());
+
+  // make sure everything is formatted correctly
+  aceFormat();
 }
 
 // asynchronous file reader
@@ -234,8 +297,6 @@ function displayNavTree() {
     }
   });
 }
-
-
 
 function createChatBox() {
   // read chat history, and write into chat box
@@ -420,21 +481,6 @@ function createVoiceRecorder() {
 }
 
 
-
-// ace text editor interface
-function aceAddLineAt(line, content) {
-  // must interact with editor session
-  var session = editor.session;
-
-  // location object
-  var location = { "row": (line - 1), "column": 0 };
-
-  session.insert(location, content);
-}
-
-function aceRemoveLineAt() {
-
-}
 
 // dialogflow error messaging
 function logDialogflowError(errorMessage) {
