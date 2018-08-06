@@ -98,6 +98,7 @@ app.get("/", (req,res) => {
       // TODO: allow customizable projects
       var namespace = req.session.passport.user.profile.id;
       var project = emailAddr;
+      var profilePic = req.session.passport.user.profile._json.image.url;
 
       // TODO: remove after demonstration
       // build directory, if it does not exist
@@ -121,6 +122,7 @@ app.get("/", (req,res) => {
       context.root_path = path.resolve(__dirname);
       context.namespace = namespace;
       context.project = project;
+      context.profilePic = profilePic;
 
       res.render("ide", context);
     } else {
