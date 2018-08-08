@@ -191,7 +191,6 @@ function createNavTree() {
     //TODO add functionality for clicked files to load into text editor
     activate: function(event, data) {
       // read and display selected file
-       console.log(data.node);
 	  fileName = data.node.title;
 	 
       var project = $("#tree").data("project");
