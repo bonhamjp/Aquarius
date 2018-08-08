@@ -106,13 +106,17 @@ function createEditor() {
   readFile(fileName, project, writeToEditorHandler);
 
   // set save button listener
-  $(document).on("click", "#save-file", function() {
+  $(document).on("click", "#save-file", function(e) {
+    e.preventDefault();
+
     var project = $("#tree").data("project");
     writeFile(fileName, project, editor.getValue());
   });
 
   // set build button listener
-  $(document).on("click", "#build-source", function() {
+  $(document).on("click", "#build-source", function(e) {
+    e.preventDefault();
+
     buildSource();
   });
 }
@@ -381,14 +385,14 @@ function logChatMessage(user, source, content) {
   var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
   // write in chat box
-  writeToChat(user, source, content, timeStampString);
+  writeToChat(user, source, content, timeStampString, true);
 
   // save chat output to log
   var message = { user: user, source: source, content: content, timeStamp: timeStampString };
   appendFile("chat.json", "chat", JSON.stringify(message) + "\n");
 }
 
-function writeToChat(user, source, content, timeStamp) {
+function writeToChat(user, source, content, timeStamp, animate) {
   var messageClass = "";
   // change class based on whether message sent, or received
   if(source == MESSAGE_SOURCES.OUTGOING) {
@@ -411,6 +415,20 @@ function writeToChat(user, source, content, timeStamp) {
   // scroll to bottom of chat box
   var chatContainer = document.getElementById("chat-history-container");
   chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  // only animate when argument set
+  if(animate) {
+    // newly appended message
+    $latestMessage = $("#chat-history li:last");
+
+    // change new message to blue
+    $latestMessage.css("backgroundColor", "#2761ff");
+
+    // animate new back to normal backgroundColor
+    $("#chat-history li:last").animate({
+      backgroundColor: "#ffffff"
+    }, 1000);
+  }
 }
 
 //sends message to dialogflow
@@ -448,7 +466,7 @@ function writeToChatHandler(data) {
         var message = JSON.parse(rawMessage);
 
         // write message data to chat
-        writeToChat(message["user"], message["source"], message["content"], message["timeStamp"]);
+        writeToChat(message["user"], message["source"], message["content"], message["timeStamp"], false);
       } catch (e) {
         console.log("trying to parse trailing empty line... need to fix");
       }
