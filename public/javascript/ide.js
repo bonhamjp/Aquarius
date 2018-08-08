@@ -192,13 +192,16 @@ function readFile(fileName, folder, handler) {
 }
 
 // asynchronous file write
-function writeFile(fileName, folder, content) {
+function writeFile(fileName, folder, content, handler) {
   $.ajax({
     type: "POST",
     url: "/write/" + fileName + "/" + folder,
     data: { content: content }
   }).done(function(data) {
-    // TODO: display success status somewhere
+    // call handler, if passed
+    if(handler != null) {
+      handler(data);
+    }
   });
 }
 
@@ -335,8 +338,22 @@ function createChatBox() {
   // read chat history, and write into chat box
   readFile("chat.json", "chat", writeToChatHandler);
 
-  // prevent chat form from submitting
-  $("#message-form").on("submit", function(e) {
+  // clears, and loads blank history, when clicked
+  $("#erase-chat-log").on("click", function(e) {
+    e.preventDefault();
+
+    // require confirmation
+    if(confirm("This will permanently clear the chat history. Do you want to clear history?")) {
+      // clear chat file
+      writeFile("chat.json", "chat", "", function(data) {
+        // read chat history, and write into chat box
+        readFile("chat.json", "chat", writeToChatHandler);
+      });
+    }
+  });
+
+  // parse and log check when send button clicked
+  $("#message-submit").on("click", function(e) {
     e.preventDefault();
 
     // only output into chat box if message entered
@@ -419,6 +436,9 @@ function writeToEditorHandler(data) {
 
 // write to chat box
 function writeToChatHandler(data) {
+  // clear chat history
+  $("#chat-history li").remove();
+
   // only display in the chat box if message exist
   var messageLog = data.split("\n");
   if(messageLog.length > 0) {
