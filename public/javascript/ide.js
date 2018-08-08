@@ -40,7 +40,7 @@ function createTerminal() {
     });
 
     // cd into project, after connection to the terminal has been established
-    cdProject();
+    terminalCdProject();
   }
 
   $(window).resize(function() {
@@ -49,8 +49,8 @@ function createTerminal() {
   });
 }
 
-// move user to project
-function cdProject() {
+// terminal commands
+function terminalSetWorkingDirectory() {
   // retrieve user workspace folder name
   $tree = $("#tree");
   var namespace = $tree.data("namespace");
@@ -58,8 +58,33 @@ function cdProject() {
 
   // cd to project
   socket.send("cd ./workspaces/" + namespace + "/" + project + "\n");
+}
+
+// move user to project
+function terminalCdProject() {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
   // clear terminal, so user starts fresh
   socket.send("clear \n");
+}
+
+// create file
+function terminalCreateFile(filename) {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
+  // make file
+  socket.send("touch " + filename + "\n");
+}
+
+// delete file
+function terminalDeleteFile(filename) {
+  // make sure in user project directory
+  terminalSetWorkingDirectory();
+
+  // make file
+  socket.send("rm " + filename + "\n");
 }
 
 // global values, to allow communication between editor and nav tree
@@ -92,13 +117,76 @@ function createEditor() {
   });
 }
 
+// ace text editor interface
+function aceFormat() {
+  // setup beautify
+  var beautify = ace.require("ace/ext/beautify");
+
+  // beatify the file
+  beautify.beautify(editor.session);
+}
+
+function aceAddLinesAt(row, lines) {
+  // must interact with editor session
+  var session = editor.session;
+
+  // number of lines to insert
+  var numberOfLinesToAdd = lines.length;
+
+  // add line by line
+  for(var i = 0;i < numberOfLinesToAdd;i++) {
+    // add a new line
+    aceExtendFileEnd();
+
+    // move existing lines down
+    session.moveLinesDown((row - 1), (session.getLength() - 1));
+
+    // insert line
+    session.insert({ "row": (row - 1), "column": 0 }, lines[i] + "\n");
+
+    // move to next line
+    row++;
+  }
+
+  // make sure everything is formatted correctly
+  aceFormat();
+}
+
+function aceExtendFileEnd() {
+  // must interact with editor session
+  var session = editor.session;
+
+  // add another line to file
+  session.insert({ "row": (session.getLength() + 1), "column": 0 }, "\n");
+}
+
+function aceAddNewLine(row) {
+  aceAddLinesAt(row, [""]);
+}
+
+function aceRemoveLineAt(row) {
+  // must interact with editor session
+  var session = editor.session;
+
+  // must use Range type to replace lines
+  var Range = require("ace/range").Range;
+
+  // replace with empty line
+  session.replace(new Range((row - 1), 0, (row -1), Number.MAX_VALUE), "");
+
+  // move remaining lines up
+  session.moveLinesUp((row), session.getLength());
+
+  // make sure everything is formatted correctly
+  aceFormat();
+}
+
 // asynchronous file reader
 function readFile(fileName, folder, handler) {
   $.ajax({
     url: "/read/" + fileName + "/" + folder
   }).done(function(data) {
     // write contents of file to editor
-    // editor.setValue(data);
     handler(data);
   });
 }
@@ -168,6 +256,22 @@ function buildSource() {
 }
 
 function createNavTree() {
+  updateNavTree();
+}
+
+// syncs nav tree with current file structure, and loads
+function updateNavTree() {
+  //ajax call to server
+  $.ajax({
+    type: "POST",
+    url: "/syncNavTree"
+  }).done(function(data) {
+    // display current file structure
+    displayNavTree();
+  });
+}
+
+function displayNavTree() {
   // retrieve user workspace folder name
   $tree = $("#tree");
   var namespace = $tree.data("namespace");
@@ -205,6 +309,28 @@ function createNavTree() {
   });
 }
 
+function navTreeFileExists(filename) {
+  var fileFound = false;
+  $(".fancytree-title").each(function() {
+    if($(this).text() == filename) {
+      fileFound = true;
+    }
+  });
+
+  return fileFound;
+}
+
+function navTreeChangeToFile(filename) {
+  var fileFound = false;
+  $(".fancytree-title").each(function() {
+    if($(this).text() == filename) {
+      $(this).click();
+    }
+  });
+
+  return fileFound;
+}
+
 function createChatBox() {
   // read chat history, and write into chat box
   readFile("chat.json", "chat", writeToChatHandler);
@@ -231,7 +357,7 @@ function createChatBox() {
   });
 }
 
-const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1 };
+const MESSAGE_SOURCES = { OUTGOING: 0, INCOMING: 1, ERROR: 2 };
 function logChatMessage(user, source, content) {
   // get time stamp
   var date = new Date();
@@ -252,6 +378,8 @@ function writeToChat(user, source, content, timeStamp) {
     messageClass = "sent-message";
   } else if(source == MESSAGE_SOURCES.INCOMING) {
     messageClass = "received-message";
+  } else if(source == MESSAGE_SOURCES.ERROR) {
+    messageClass = "error-message";
   }
 
   // append list item to li
@@ -312,52 +440,51 @@ function writeToChatHandler(data) {
 function createVoiceRecorder() {
   var recorder = document.getElementById("recorder");
 
-  if(navigator.mediaDevices){
-	//add constraints object
-	var constraints = { audio: true };
-	var chunks = [];
+  if(navigator.mediaDevices) {
+  	//add constraints object
+  	var constraints = { audio: true };
+  	var chunks = [];
 
-     //call getUserMedia, then the magic
-     navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-		// setup media recorder
-		var mediaRecorder = new MediaRecorder(mediaStream);
+    //call getUserMedia, then the magic
+    navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
+      // setup media recorder
+      var mediaRecorder = new MediaRecorder(mediaStream);
 
-		// record when pressed
-		 recorder.onclick = function() {
-			 recorder.value = "Stop";
-			 mediaRecorder.start();
-		 }
-		 
-		 mediaRecorder.onstart = function(e){
-		   // stop recording when pressed
-		   recorder.onclick = function() {
-			 recorder.value = "Record";
-			 mediaRecorder.stop();
-		   }
-	}
-	
-	   
-       // process media when stopped
-       mediaRecorder.onstop = function(e) {
-         // set recording format
-         var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+      // record when pressed
+      recorder.onclick = function() {
+        recorder.value = "Stop";
+        mediaRecorder.start();
+      }
 
-         // read recorded value to binary
-         var reader = new FileReader();
-         reader.readAsBinaryString(blob);
-         reader.onloadend = function() {
-           // send to back end to be saved and converted
-           writeFlacFile("recording.flac", "voice", reader.result);
-         }
+      mediaRecorder.onstart = function(e){
+        // stop recording when pressed
+        recorder.onclick = function() {
+          recorder.value = "Record";
+          mediaRecorder.stop();
+        }
+      }
 
-         chunks = [];
-		 
-	//reset mediaRecorder settings
-	recorder.onclick = function() {
-		recorder.value = "Stop";
-         	mediaRecorder.start();
-	}
-}
+      // process media when stopped
+      mediaRecorder.onstop = function(e) {
+        // set recording format
+        var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+
+        // read recorded value to binary
+        var reader = new FileReader();
+        reader.readAsBinaryString(blob);
+        reader.onloadend = function() {
+          // send to back end to be saved and converted
+          writeFlacFile("recording.flac", "voice", reader.result);
+        }
+
+        chunks = [];
+
+        //reset mediaRecorder settings
+        recorder.onclick = function() {
+          recorder.value = "Stop";
+          mediaRecorder.start();
+        }
+      }
 
       // asynchronous flac file write
       function writeFlacFile(fileName, folder, content) {
@@ -366,16 +493,16 @@ function createVoiceRecorder() {
           url: "/writeflac/" + fileName + "/" + folder,
           data: { content: content }
         }).done(function(data) {
-            // username
-            var user = $("#chat-box").data("display-name");
+          // username
+          var user = $("#chat-box").data("display-name");
 
-            // write in chat box
-            logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
+          // write in chat box
+          logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
 
-            //send message to dialogflow
-            sendDialogFlow(data);
-          });
-        }
+          //send message to dialogflow
+          sendDialogFlow(data);
+        });
+      }
 
       mediaRecorder.ondataavailable = function(e) {
         chunks.push(e.data);
@@ -386,27 +513,147 @@ function createVoiceRecorder() {
   }
 }
 
+// dialogflow error messaging
+function logDialogflowError(errorMessage) {
+  // log and pass dialogflow error response to chat window
+  var user = "videBot";
+  logChatMessage(user, MESSAGE_SOURCES.ERROR, errorMessage);
+}
+
+// suite of dialogflow handlers
+function dialogflowCreateFileHandler(filename) {
+  if(filename != null && !navTreeFileExists(filename)) {
+    // create new file
+    terminalCreateFile(filename);
+
+    // refresh nav tree
+    updateNavTree();
+  } else {
+    logDialogflowError("The file already exists. Sorry! Please try again.");
+  }
+}
+
+function dialogflowDeleteFileHandler(filename) {
+  if(filename != null && navTreeFileExists(filename)) {
+    // delete file
+    terminalDeleteFile(filename);
+
+    // refresh nav tree
+    updateNavTree();
+  } else {
+    logDialogflowError("The file does not exist. Sorry! Please try again.");
+  }
+}
+
+function dialogflowChangeFileHandler(filename) {
+  if(filename != null && navTreeFileExists(filename)) {
+    // switch to file
+    navTreeChangeToFile(filename);
+  } else {
+    logDialogflowError("The file does not exist. Sorry! Please try again.");
+  }
+}
+
+function dialogflowSaveFileHandler() {
+  $("#save-file").click();
+}
+
+function dialogflowCompileFileHandler() {
+  $("#build-source").click();
+}
+
+function dialogflowAddNewLineHandler(row) {
+  if(row != null) {
+    aceAddNewLine(row);
+  } else {
+    logDialogflowError("You need to specify which row you would like to add a newline to. Sorry! Please try again.");
+  }
+}
+
+function dialogflowAddVariableHandler(row, type, name, value) {
+  if(row != null && type != null && name != null && value != null) {
+    var lines = []
+    lines.push(type + " " + name + " = " + value + ";");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create a variable. Sorry! Please try again.");
+  }
+}
+
+function dialogflowAddForLoopHandler(row, counterVar, startingNumber, endingNumber, incrementor) {
+  if(row != null && counterVar != null && startingNumber != null && endingNumber != null && incrementor != null) {
+    var lines = []
+    lines.push("for (int " + counterVar + " = " + startingNumber + ";" + counterVar + " < " + endingNumber + ";" + counterVar + incrementor + ") {");
+    lines.push("// ...");
+    lines.push("}");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create a for loop. Sorry! Please try again.");
+  }
+}
+
+function dialogflowRemoveLineHandler(row) {
+  if(row != null) {
+    aceRemoveLineAt(row);
+  } else {
+    logDialogflowError("You need to specify which row you would like to remove. Sorry! Please try again.");
+  }
+}
+
+// handles all actions returned from dialogflow
+// command should be an object, with at least one property: { action: '' }
+function dialogflowHandler(command) {
+  switch(command.action) {
+    case "CreateFile":
+      dialogflowCreateFileHandler(command.filename);
+      break;
+
+    case "DeleteFile":
+      dialogflowDeleteFileHandler(command.filename);
+      break;
+
+    case "ChangeFile":
+      dialogflowChangeFileHandler(command.filename);
+      break;
+
+    case "SaveFile":
+      dialogflowSaveFileHandler();
+      break;
+
+    case "CompileFile":
+      dialogflowCompileFileHandler();
+      break;
+
+    case "AddNewLine":
+      dialogflowAddNewLineHandler(command.row);
+
+    case "AddVariable":
+      dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
+      break;
+
+    case "AddForLoop":
+      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.endingNumber, command.incrementor);
+      break;
+
+    case "RemoveLine":
+      dialogflowRemoveLineHandler(command.row);
+      break;
+
+    default:
+      logDialogflowError("Command not understood. Sorry! Please try again.");
+  }
+}
+
 // setup ide after document is ready
 $(document).ready(function() {
-  // only setup terminal on ide page
-  if($("#terminal").length == 1) {
+  // setup ide specific elements on ide page
+  if($("#ide").length == 1) {
     createTerminal();
-  }
-  // only setup editor on page with editor element
-  if($("#editor").length == 1) {
     createEditor();
-  }
-  // only setup nave tree on ide page
-  if($("#tree").length == 1) {
     createNavTree();
-  }
-  // only setup chat box on ide page
-  if($("#chat-box").length == 1) {
     createChatBox();
-  }
-  // only setup voice recorder on ide page
-  // only setup chat box on ide page
-  if($("#chat-box").length == 1) {
     createVoiceRecorder();
   }
 });
