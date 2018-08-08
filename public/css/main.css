@@ -76,6 +76,21 @@
 	border-bottom: 1px solid #dee2e6;
 }
 
+#profilePic{
+	border-radius:50%;
+}
+
+ ul.fancytree-container {
+  border: none;
+  background-color: #f8f9fa;
+  font-size: 1.2vw;
+  outline:none !important;
+}
+
+#displayName{
+	font-size: 1vw;
+}
+
 .message-details, .message-content {
 	padding: 0;
 	margin: 0;
@@ -97,3 +112,84 @@
 .sent-message {
 	text-align: right;
 }
+
+.hwTut {
+    position: relative;
+    display: inline-block;
+}
+
+.hwTut .hwText {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.hwTut .hwText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.hwTut:hover .hwText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.thwTut {
+    position: relative;
+    display: inline-block;
+}
+
+.thwTut .thwText {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.thwTut .thwText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.thwTut:hover .thwText {
+    visibility: visible;
+    opacity: 1;
+}
+
+li {
+	cursor: pointer;
+}
+
