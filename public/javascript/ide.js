@@ -278,6 +278,16 @@ function displayNavTree() {
 
   // using default options
   $tree.fancytree({
+	icon: function(event, data){
+		if(String(data.node.data.path).match(/\.cpp$/)){
+			return "cpppp-490x490.png";
+		}
+		else if(String(data.node.data.path).match(/\.h$/)){
+			return "header.png";
+		}
+		else
+			return "file.png";
+	},
     source: {
       url: "/" + namespace + "/tree/data.json",
       cache: false
@@ -285,7 +295,8 @@ function displayNavTree() {
     //TODO add functionality for clicked files to load into text editor
     activate: function(event, data) {
       // read and display selected file
-      fileName = data.node.title;
+	  fileName = data.node.title;
+	 
       var project = $("#tree").data("project");
       readFile(fileName, project, writeToEditorHandler);
     },
@@ -645,4 +656,19 @@ $(document).ready(function() {
     createChatBox();
     createVoiceRecorder();
   }
+});
+
+//get which tutorial the user wants to start and send it to dialogflow
+$(document).click(function(event) {
+    var text = $(event.target).text();
+	switch(text)
+	{
+		case "Hello World Tutorial":
+			sendDialogFlow("hello");
+			break;
+		case "Advanced Tutorial": 
+			sendDialogFlow("start advanced tutorial");
+			break;
+	}
+			
 });
