@@ -94,8 +94,12 @@ function createEditor() {
   // initialize ace editor
   editor = ace.edit("editor");
 
+  // increase font
+  editor.setOptions({ fontSize: "12pt" });
+
   // set editor theme
-  editor.setTheme("ace/theme/monokai");
+  // editor.setTheme("ace/theme/monokai");
+  editor.setTheme("ace/theme/solarized_dark");
 
   // set syntax highlighting
   editor.getSession().setMode("ace/mode/c_cpp");
@@ -106,13 +110,17 @@ function createEditor() {
   readFile(fileName, project, writeToEditorHandler);
 
   // set save button listener
-  $(document).on("click", "#save-file", function() {
+  $(document).on("click", "#save-file", function(e) {
+    e.preventDefault();
+
     var project = $("#tree").data("project");
     writeFile(fileName, project, editor.getValue());
   });
 
   // set build button listener
-  $(document).on("click", "#build-source", function() {
+  $(document).on("click", "#build-source", function(e) {
+    e.preventDefault();
+
     buildSource();
   });
 }
@@ -133,23 +141,52 @@ function aceAddLinesAt(row, lines) {
   // number of lines to insert
   var numberOfLinesToAdd = lines.length;
 
+  // determine which row to add line to
+  var targetRow = row;
+
+  // calculate which row to add to, if a row was not passed
+  if(targetRow == null) {
+    // get current cursor position
+    var cursorPosition = editor.getCursorPosition();
+
+    // get line at cursor position
+    var currentLine = session.getLine(cursorPosition["row"]);
+
+    // set to next row, if at the end of a non-empty row
+    if($.trim(currentLine).length > 0 && cursorPosition["column"] == currentLine.length) {
+      targetRow = cursorPosition["row"] + 1;
+
+    // else stay on current row
+    } else {
+      targetRow = cursorPosition["row"];
+
+    }
+  } else {
+    // row uses 0 index internally, but we use line actual line numbers
+    // when calling ace helper functions, to make things cleaner
+    targetRow -= 1;
+  }
+
   // add line by line
   for(var i = 0;i < numberOfLinesToAdd;i++) {
     // add a new line
     aceExtendFileEnd();
 
     // move existing lines down
-    session.moveLinesDown((row - 1), (session.getLength() - 1));
+    session.moveLinesDown((targetRow), (session.getLength() - 1));
 
     // insert line
-    session.insert({ "row": (row - 1), "column": 0 }, lines[i] + "\n");
+    session.insert({ "row": (targetRow), "column": 0 }, lines[i] + "\n");
 
     // move to next line
-    row++;
+    targetRow++;
   }
 
   // make sure everything is formatted correctly
   aceFormat();
+
+  // move to next line
+  aceMoveCursorTo(targetRow + 1);
 }
 
 function aceExtendFileEnd() {
@@ -175,10 +212,27 @@ function aceRemoveLineAt(row) {
   session.replace(new Range((row - 1), 0, (row -1), Number.MAX_VALUE), "");
 
   // move remaining lines up
-  session.moveLinesUp((row), session.getLength());
+  session.moveLinesUp(Number(row), session.getLength());
 
   // make sure everything is formatted correctly
   aceFormat();
+
+  // move to next line
+  aceMoveCursorTo(row);
+}
+
+function aceMoveCursorTo(row, goToEnd) {
+  // specify cursor should go to beginning of line, unless other specified otherwise
+  var column = 0;
+
+  // find end of line, if specified
+  if(goToEnd) {
+    var session = editor.session;
+    column = session.getLine(row - 1).length;
+  }
+
+  // set editor cursor position
+  editor.gotoLine(row, column);
 }
 
 // asynchronous file reader
@@ -299,7 +353,7 @@ function displayNavTree() {
     activate: function(event, data) {
       // read and display selected file
 	  fileName = data.node.title;
-	 
+
       var project = $("#tree").data("project");
       readFile(fileName, project, writeToEditorHandler);
     },
@@ -381,14 +435,14 @@ function logChatMessage(user, source, content) {
   var timeStampString = date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
   // write in chat box
-  writeToChat(user, source, content, timeStampString);
+  writeToChat(user, source, content, timeStampString, true);
 
   // save chat output to log
   var message = { user: user, source: source, content: content, timeStamp: timeStampString };
   appendFile("chat.json", "chat", JSON.stringify(message) + "\n");
 }
 
-function writeToChat(user, source, content, timeStamp) {
+function writeToChat(user, source, content, timeStamp, animate) {
   var messageClass = "";
   // change class based on whether message sent, or received
   if(source == MESSAGE_SOURCES.OUTGOING) {
@@ -411,6 +465,20 @@ function writeToChat(user, source, content, timeStamp) {
   // scroll to bottom of chat box
   var chatContainer = document.getElementById("chat-history-container");
   chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  // only animate when argument set
+  if(animate) {
+    // newly appended message
+    $latestMessage = $("#chat-history li:last");
+
+    // change new message to blue
+    $latestMessage.css("backgroundColor", "#dee2e6");
+
+    // animate new back to normal backgroundColor
+    $("#chat-history li:last").animate({
+      backgroundColor: "#ffffff"
+    }, 1000);
+  }
 }
 
 //sends message to dialogflow
@@ -448,7 +516,7 @@ function writeToChatHandler(data) {
         var message = JSON.parse(rawMessage);
 
         // write message data to chat
-        writeToChat(message["user"], message["source"], message["content"], message["timeStamp"]);
+        writeToChat(message["user"], message["source"], message["content"], message["timeStamp"], false);
       } catch (e) {
         console.log("trying to parse trailing empty line... need to fix");
       }
@@ -584,6 +652,28 @@ function dialogflowCompileFileHandler() {
   $("#build-source").click();
 }
 
+function dialogflowAddInclude(headerName, localHeader) {
+  if(headerName != null) {
+    var lines = []
+
+    // if value is defined, add setter in line
+    if(localHeader) {
+      lines.push("#include " + "\"" + headerName + "\"");
+    // else only declare variable
+    } else {
+      lines.push("#include " + "<" + headerName + ">");
+    }
+
+    aceAddLinesAt(0, lines);
+  } else {
+    logDialogflowError("You need to specify a header file name. Sorry! Please try again.");
+  }
+}
+
+function dialogflowMoveCursorHandler(row, goToEnd) {
+  aceMoveCursorTo(row, goToEnd);
+}
+
 function dialogflowAddNewLineHandler(row) {
   if(row != null) {
     aceAddNewLine(row);
@@ -593,9 +683,16 @@ function dialogflowAddNewLineHandler(row) {
 }
 
 function dialogflowAddVariableHandler(row, type, name, value) {
-  if(row != null && type != null && name != null && value != null) {
+  if(type != null && name != null) {
     var lines = []
-    lines.push(type + " " + name + " = " + value + ";");
+
+    // if value is defined, add setter in line
+    if(value != null) {
+      lines.push(type + " " + name + " = " + value + ";");
+    // else only declare variable
+    } else {
+      lines.push(type + " " + name + ";");
+    }
 
     aceAddLinesAt(row, lines);
   } else {
@@ -604,7 +701,7 @@ function dialogflowAddVariableHandler(row, type, name, value) {
 }
 
 function dialogflowAddForLoopHandler(row, counterVar, startingNumber, endingNumber, incrementor) {
-  if(row != null && counterVar != null && startingNumber != null && endingNumber != null && incrementor != null) {
+  if(counterVar != null && startingNumber != null && endingNumber != null && incrementor != null) {
     var lines = []
     lines.push("for (int " + counterVar + " = " + startingNumber + ";" + counterVar + " < " + endingNumber + ";" + counterVar + incrementor + ") {");
     lines.push("// ...");
@@ -613,6 +710,32 @@ function dialogflowAddForLoopHandler(row, counterVar, startingNumber, endingNumb
     aceAddLinesAt(row, lines);
   } else {
     logDialogflowError("Missing values needed to create a for loop. Sorry! Please try again.");
+  }
+}
+
+function dialogflowAddWhileLoopHandler(row, conditional) {
+  if(conditional != null) {
+    var lines = []
+    lines.push("while (" + conditional + ") {");
+    lines.push("// ...");
+    lines.push("}");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create a while loop. Sorry! Please try again.");
+  }
+}
+
+function dialogflowAddIfHandler(row, conditional) {
+  if(conditional != null) {
+    var lines = []
+    lines.push("if (" + conditional + ") {");
+    lines.push("// ...");
+    lines.push("}");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("Missing values needed to create an if statement. Sorry! Please try again.");
   }
 }
 
@@ -648,8 +771,17 @@ function dialogflowHandler(command) {
       dialogflowCompileFileHandler();
       break;
 
+    case "AddInclude":
+      dialogflowAddInclude(command.headerName, command.localHeader);
+      break
+
+    case "MoveCursor":
+      dialogflowMoveCursorHandler(command.row, command.goToEnd);
+      break;
+
     case "AddNewLine":
       dialogflowAddNewLineHandler(command.row);
+      break;
 
     case "AddVariable":
       dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
@@ -657,6 +789,14 @@ function dialogflowHandler(command) {
 
     case "AddForLoop":
       dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.endingNumber, command.incrementor);
+      break;
+
+    case "AddWhileLoop":
+        dialogflowAddWhileLoopHandler(command.row, command.conditional);
+        break;
+
+    case "AddIf":
+      dialogflowAddIfHandler(command.row, command.conditional);
       break;
 
     case "RemoveLine":
@@ -688,12 +828,12 @@ $(document).click(function(event) {
 		case "Basic Tutorial":
 			sendDialogFlow("hello");
 			break;
-		case "Advanced Tutorial": 
+		case "Advanced Tutorial":
 			sendDialogFlow("start advanced tutorial");
 			break;
 		case "Help"
 			sendDialogFlow("help");
 			break;
 	}
-			
+
 });
