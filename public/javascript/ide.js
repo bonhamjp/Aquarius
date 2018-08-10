@@ -528,51 +528,53 @@ function writeToChatHandler(data) {
 function createVoiceRecorder() {
   var recorder = document.getElementById("recorder");
 
-  if(navigator.mediaDevices) {
-  	//add constraints object
-  	var constraints = { audio: true };
-  	var chunks = [];
 
-    //call getUserMedia, then the magic
-    navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-      // setup media recorder
-      var mediaRecorder = new MediaRecorder(mediaStream);
+  if(navigator.mediaDevices){
+	//add constraints object
+	var constraints = { audio: true };
+	var chunks = [];
 
-      // record when pressed
-      recorder.onclick = function() {
-        recorder.value = "Stop";
-        mediaRecorder.start();
-      }
+     //call getUserMedia, then the magic
+     navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
+		// setup media recorder
+		var mediaRecorder = new MediaRecorder(mediaStream);
 
-      mediaRecorder.onstart = function(e){
-        // stop recording when pressed
-        recorder.onclick = function() {
-          recorder.value = "Record";
-          mediaRecorder.stop();
-        }
-      }
+		// record when pressed
+		 recorder.onclick = function() {
+			 recorder.innerHTML = "Stop";
+			 mediaRecorder.start();
+		 }
+		 
+		 mediaRecorder.onstart = function(e){
+		   // stop recording when pressed
+		   recorder.onclick = function() {
+			 recorder.innerHTML = "Record";
+			 mediaRecorder.stop();
+		   }
+	}
+	
+	   
+       // process media when stopped
+       mediaRecorder.onstop = function(e) {
+         // set recording format
+         var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
 
-      // process media when stopped
-      mediaRecorder.onstop = function(e) {
-        // set recording format
-        var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+         // read recorded value to binary
+         var reader = new FileReader();
+         reader.readAsBinaryString(blob);
+         reader.onloadend = function() {
+           // send to back end to be saved and converted
+           writeFlacFile("recording.flac", "voice", reader.result);
+         }
 
-        // read recorded value to binary
-        var reader = new FileReader();
-        reader.readAsBinaryString(blob);
-        reader.onloadend = function() {
-          // send to back end to be saved and converted
-          writeFlacFile("recording.flac", "voice", reader.result);
-        }
-
-        chunks = [];
-
-        //reset mediaRecorder settings
-        recorder.onclick = function() {
-          recorder.value = "Stop";
-          mediaRecorder.start();
-        }
-      }
+         chunks = [];
+		 
+	//reset mediaRecorder settings
+	recorder.onclick = function() {
+		recorder.innerHTML = "Stop";
+         	mediaRecorder.start();
+	}
+}
 
       // asynchronous flac file write
       function writeFlacFile(fileName, folder, content) {
@@ -823,11 +825,14 @@ $(document).click(function(event) {
     var text = $(event.target).text();
 	switch(text)
 	{
-		case "Hello World Tutorial":
+		case "Basic Tutorial":
 			sendDialogFlow("hello");
 			break;
 		case "Advanced Tutorial":
 			sendDialogFlow("start advanced tutorial");
+			break;
+		case "Help"
+			sendDialogFlow("help");
 			break;
 	}
 

@@ -12,29 +12,29 @@
     <!--File Tree Column-->
     <div class="col-2 nopadding">
       <div class="file-tree">
-        <div class = "w3-panel w3-center">
-          <img src="{{profilePic}}" id="profilePic">
+	<div class = "w3-panel w3-center">
+	 <img src="{{profilePic}}" id="profilePic"> 
+          <div id="displayName"><p>{{ project }}</p></div>
+	</div>
+		      <div id="tree" data-root-path="{{ root_path }}" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
+	    </div>
+		<br /><br />
+		<ul style="list-style-type:none">
+			<div class="hwTut">
+				<li id="bTut">Basic Tutorial</li>
+				<span class="hwText">Learn the basics of file creation and printing.</span>
+			</div>
 
-          <div id="displayName">
-            <p>{{ project }}</p>
-          </div>
-        </div>
-
-        <div id="tree" data-root-path="{{ root_path }}" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
-      </div>
-
-      <br /><br />
-      <ul style="list-style-type:none">
-        <div class="hwTut">
-          <li>Hello World Tutorial</li>
-          <span class="hwText">Learn the basics of file creation and printing.</span>
-        </div>
-
-        <div class="thwTut">
-          <li>Advanced Tutorial</li>
-          <span class="thwText">Learn about variables, while loops, and more.</span>
-        </div>
-      </ul>
+			<div class="avTut">
+				<li id="aTut">Advanced Tutorial</li>
+				<span class="avText">Learn about variables, while loops, and more.</span>
+			</div>
+			
+			<div class="helpTut">
+				<li id="hTut">Help</li>
+				<span class="helpText">Get help about what you can do and how to do it.</span>
+			</div>
+		</ul>
     </div>
 
     <!--Editor & Terminal Column -->
