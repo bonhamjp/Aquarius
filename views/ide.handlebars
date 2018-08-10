@@ -8,28 +8,35 @@
 
 <div id="ide" class="container-fluid">
   <div class="row">
+
     <!--File Tree Column-->
     <div class="col-2 nopadding">
       <div class="file-tree">
-	<div class = "w3-panel w3-center">
-	 <img src="{{profilePic}}" id="profilePic"> 
-          <div id="displayName"><p>{{ project }}</p></div>
-	</div>
-		      <div id="tree" data-root-path="{{ root_path }}" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
-	    </div>
-		<br /><br />
-		<ul style="list-style-type:none">
-			<div class="hwTut">
-				<li>Hello World Tutorial</li>
-				<span class="hwText">Learn the basics of file creation and printing.</span>
-			</div>
+        <div class = "w3-panel w3-center">
+          <img src="{{profilePic}}" id="profilePic">
 
-			<div class="thwTut">
-				<li>Advanced Tutorial</li>
-				<span class="thwText">Learn about variables, while loops, and more.</span>
-			</div>
-		</ul>
+          <div id="displayName">
+            <p>{{ project }}</p>
+          </div>
+        </div>
+
+        <div id="tree" data-root-path="{{ root_path }}" data-namespace="{{ namespace }}" data-project="{{ project }}"></div>
+      </div>
+
+      <br /><br />
+      <ul style="list-style-type:none">
+        <div class="hwTut">
+          <li>Hello World Tutorial</li>
+          <span class="hwText">Learn the basics of file creation and printing.</span>
+        </div>
+
+        <div class="thwTut">
+          <li>Advanced Tutorial</li>
+          <span class="thwText">Learn about variables, while loops, and more.</span>
+        </div>
+      </ul>
     </div>
+
     <!--Editor & Terminal Column -->
     <div class="col-8 nopadding">
       <div id="editor-container">
@@ -38,30 +45,55 @@
 
       <div id="terminal" data-aquarius-domain="{{ aquarius_domain }}" data-aquarius-port="{{ aquarius_port }}"></div>
     </div>
+
     <!--Chat Column -->
     <div class="col-2 nopadding">
       <div id="chat-box" data-display-name="{{ display_name }}">
         <div id="chat-history-container">
           <ul id="chat-history"></ul>
         </div>
-        <div class = "w3-panel w3-center">
-        <button class="w3-button w3-padding-small w3-black" id="recorder">Record</button>
+
         <audio></audio>
-	</div>
 
         <div id="chat-message-form-container">
-          <form id="message-form" action="#">
-            <textarea placeholder="Optional Typing Input..." id="message-input"></textarea>
-	    <div class = "w3-panel w3-center">
-            <button class="w3-button w3-padding-small w3-black" id="message-submit">Send</button>
-	    </div>
-          </form>
-        </div>
+          <div class = "w3-panel w3-center">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-6 nopadding">
+                  <button class="w3-button w3-padding-small w3-black" id="recorder">
+                    Record
+                  </button>
+                </div>
 
+                <div class="col-6 nopadding">
+                  <button class="w3-button w3-padding-small w3-black" id="erase-chat-log">
+                    Clear History
+                  </button>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="row">
+                <div class="col-8 nopadding">
+                  <form id="message-form" action="#">
+                    <textarea placeholder="Optional Typing Input..." id="message-input"></textarea>
+                  </form>
+                </div>
+
+                <div class="col-4 nopadding">
+                  <button class="w3-button w3-padding-small w3-black" id="message-submit">
+                    Send
+                  </button>
+                </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 <!--Footer -->
 <div class = "w3-bar w3-black w3-padding-16">
   <span class = "w3-bar-item w3-center">VIDE</span>
