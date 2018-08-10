@@ -325,14 +325,14 @@ function createVoiceRecorder() {
 
 		// record when pressed
 		 recorder.onclick = function() {
-			 recorder.value = "Stop";
+			 recorder.innerHTML = "Stop";
 			 mediaRecorder.start();
 		 }
 		 
 		 mediaRecorder.onstart = function(e){
 		   // stop recording when pressed
 		   recorder.onclick = function() {
-			 recorder.value = "Record";
+			 recorder.innerHTML = "Record";
 			 mediaRecorder.stop();
 		   }
 	}
@@ -355,7 +355,7 @@ function createVoiceRecorder() {
 		 
 	//reset mediaRecorder settings
 	recorder.onclick = function() {
-		recorder.value = "Stop";
+		recorder.innerHTML = "Stop";
          	mediaRecorder.start();
 	}
 }
@@ -417,11 +417,14 @@ $(document).click(function(event) {
     var text = $(event.target).text();
 	switch(text)
 	{
-		case "Hello World Tutorial":
+		case "Basic Tutorial":
 			sendDialogFlow("hello");
 			break;
 		case "Advanced Tutorial": 
 			sendDialogFlow("start advanced tutorial");
+			break;
+		case "Help"
+			sendDialogFlow("help");
 			break;
 	}
 			
