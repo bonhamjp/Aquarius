@@ -151,12 +151,17 @@
     opacity: 1;
 }
 
-.thwTut {
+#bTut:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+.avTut {
     position: relative;
     display: inline-block;
 }
 
-.thwTut .thwText {
+.avTut .avText {
     visibility: hidden;
     width: 120px;
     background-color: #555;
@@ -173,7 +178,7 @@
     transition: opacity 0.3s;
 }
 
-.thwTut .thwText::after {
+.avTut .avText::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -184,12 +189,54 @@
     border-color: #555 transparent transparent transparent;
 }
 
-.thwTut:hover .thwText {
+.avTut:hover .avText {
     visibility: visible;
     opacity: 1;
 }
 
-li {
-	cursor: pointer;
+#aTut:hover {
+	color:blue;
+	cursor:pointer;
+}
+.helpTut {
+    position: relative;
 }
 
+.helpTut .helpText {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -120px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.helpTut .helpText::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.helpTut:hover .helpText {
+    visibility: visible;
+    opacity: 1;
+}
+
+#hTut:hover {
+	color:blue;
+	cursor:pointer;
+}
+	
