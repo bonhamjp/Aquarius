@@ -107,9 +107,9 @@ app.get("/", (req,res) => {
       fileIO.buildFile(namespace, project, "main.cpp");
       fileIO.buildFile(namespace, project, "main.h");
 
-      // use user workspace/project directory as base for dir tree
-      var treeOutput = dirTree.buildTreeData("./workspaces/" + namespace + "/" + project, 1);
-      fileIO.writeFile("data.json", JSON.stringify(treeOutput), namespace, "tree");
+      // // use user workspace/project directory as base for dir tree
+      // var treeOutput = dirTree.buildTreeData("./workspaces/" + namespace + "/" + project, 1);
+      // fileIO.writeFile("data.json", JSON.stringify(treeOutput), namespace, "tree");
 
       // set cookie
       res.cookie("token", req.session.token);
@@ -132,6 +132,25 @@ app.get("/", (req,res) => {
   } else {
     context.message = "You must log in with an Oregon State email address to use VIDE.";
     res.render("sign-in", context);
+  }
+});
+
+// syncs nav tree
+app.post("/syncNavTree", (req, res) => {
+  var context = {};
+  if(req.session.token) {
+    var emailAddr = req.session.passport.user.profile.emails[0].value;
+    if(authorizedEmail(emailAddr)) {
+      // use user workspace/project directory as base for dir tree
+      var namespace = req.session.passport.user.profile.id;
+      var project = emailAddr;
+
+      var treeOutput = dirTree.buildTreeData("./workspaces/" + namespace + "/" + project, 1);
+      fileIO.writeFile("data.json", JSON.stringify(treeOutput), namespace, "tree");
+
+      // directory structure saved
+      res.send("Success");
+    }
   }
 });
 
