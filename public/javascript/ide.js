@@ -70,12 +70,14 @@ function terminalCdProject() {
 }
 
 // create file
-function terminalCreateFile(filename) {
+function terminalCreateFile(filename, callback) {
   // make sure in user project directory
-  terminalSetWorkingDirectory();
+  
+  //terminalSetWorkingDirectory();    //Commenting out cause it's causing a bug in the terminal.
 
   // make file
   socket.send("touch " + filename + "\n");
+
 }
 
 // delete file
@@ -326,6 +328,7 @@ function updateNavTree() {
     // display current file structure
     displayNavTree();
   });
+
 }
 
 function displayNavTree() {
@@ -491,7 +494,11 @@ function sendDialogFlow(content){
   }).done(function(data) {
     //pass dialogflow response to chat window
     var user = "videBot";
-    logChatMessage(user, MESSAGE_SOURCES.INCOMING, data);
+    logChatMessage(user, MESSAGE_SOURCES.INCOMING, data.fulfillmentText);
+    //only call dialogflow handler if there is an action
+    if (data.action != "None"){
+	    dialogflowHandler(data);
+    }
   });
 }
 
@@ -615,7 +622,7 @@ function dialogflowCreateFileHandler(filename) {
     terminalCreateFile(filename);
 
     // refresh nav tree
-    updateNavTree();
+    setTimeout(updateNavTree, 500);
   } else {
     logDialogflowError("The file already exists. Sorry! Please try again.");
   }
@@ -677,6 +684,43 @@ function dialogflowAddNewLineHandler(row) {
     aceAddNewLine(row);
   } else {
     logDialogflowError("You need to specify which row you would like to add a newline to. Sorry! Please try again.");
+  }
+}
+
+function dialogflowDefaultTempHandler(){
+   var include = []
+   include.push("#include<iostream>");
+   aceAddLinesAt(1, include);
+
+   var namespace = []
+   namespace.push("using namespace std;");
+   aceAddLinesAt(2, namespace);
+
+   var mainFunction = []
+   mainFunction.push("int main()");
+   aceAddLinesAt(6, mainFunction);
+
+   var firstBrack = []
+   firstBrack.push("{");
+   firstBrack.push("// ...");
+   aceAddLinesAt(7, firstBrack);
+
+
+   var returnZero = [] 
+   returnZero.push("return 0;");
+   aceAddLinesAt(10, returnZero);
+
+   var lastBrack = []
+   lastBrack.push("}");
+   aceAddLinesAt(11, lastBrack);
+}
+
+function dialogflowPrintHandler(row, content){
+  if(row != null && content != null){
+    aceMoveCursorTo(row);
+    var printText = []
+    printText.push("cout << \"" + content + "\" << endl;");
+    aceAddLinesAt(row, printText);
   }
 }
 
@@ -750,7 +794,12 @@ function dialogflowRemoveLineHandler(row) {
 function dialogflowHandler(command) {
   switch(command.action) {
     case "CreateFile":
-      dialogflowCreateFileHandler(command.filename);
+      //create combined file and pass to create file handler		  
+      var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
+      //create file
+      dialogflowCreateFileHandler(completeName);
+      //change to new file
+      setTimeout(dialogflowChangeFileHandler.bind(null,completeName), 1000);
       break;
 
     case "DeleteFile":
@@ -769,6 +818,11 @@ function dialogflowHandler(command) {
       dialogflowCompileFileHandler();
       break;
 
+    case "Default":
+     //creates default C++ source file
+     dialogflowDefaultTempHandler();
+     break;
+
     case "AddInclude":
       dialogflowAddInclude(command.headerName, command.localHeader);
       break
@@ -779,6 +833,15 @@ function dialogflowHandler(command) {
 
     case "AddNewLine":
       dialogflowAddNewLineHandler(command.row);
+      break;
+
+    case "printHW":
+      var row = command.parameters.fields.rowHW['stringValue'];
+      if (row == "five"){
+	      row = 5;
+      }
+      var print = command.parameters.fields.printHW['stringValue'];
+      dialogflowPrintHandler(row, print);
       break;
 
     case "AddVariable":
