@@ -894,7 +894,7 @@ $(document).click(function(event) {
 		case "Advanced Tutorial":
 			sendDialogFlow("start advanced tutorial");
 			break;
-		case "Help"
+		case "Help":
 			sendDialogFlow("help");
 			break;
 	}
