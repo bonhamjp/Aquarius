@@ -331,15 +331,14 @@ app.post("/sendToDialogflow", function(req, res){
 	  .then(responses => {
       console.log('Detected Intent');
       const result = responses[0].queryResult;
-      const chat = result.fulfillmentText;
-      console.log(`	Query: ${result.queryText}`);
-      console.log(` Response: ${result.fulfillmentText}`);
       if(result.intent){
         console.log(` Intent: ${result.intent.displayName}`);
       } else {
         console.log(`No intent matched.`);
 		  }
-      res.send(chat);
+      console.log(` Action: ${result.action}`);
+      console.log("Parameters: "+JSON.stringify(result.parameters, null, 4));
+      res.send(result);
 	  })
     .catch(err => {
       console.error('ERROR: ', err);
