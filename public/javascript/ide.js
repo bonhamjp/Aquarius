@@ -187,8 +187,16 @@ function aceAddLinesAt(row, lines) {
   // make sure everything is formatted correctly
   aceFormat();
 
-  // move to next line
-  aceMoveCursorTo(targetRow + 1);
+  // if the last line added was an ending brace, put the cursor inside the brace
+  if($.trim(session.getLine(targetRow - 1)) == "}") {
+    // move to previous line
+    aceMoveCursorTo(targetRow - 1);
+
+    // else put the cursor on the next line
+  } else {
+    // move to next line
+    aceMoveCursorTo(targetRow + 1);
+  }
 }
 
 function aceExtendFileEnd() {
@@ -703,7 +711,7 @@ function dialogflowDefaultTempHandler(){
 
    var firstBrack = []
    firstBrack.push("{");
-   firstBrack.push("// ...");
+   firstBrack.push("// Add code here");
    aceAddLinesAt(7, firstBrack);
 
    var returnZero = []
@@ -745,7 +753,7 @@ function dialogflowAddForLoopHandler(row, counterVar, startingNumber, conditiona
   if(counterVar != null && startingNumber != null && conditional != null && direction != null && incrementor != null) {
     var lines = []
     lines.push("for (int " + counterVar + " = " + startingNumber + ";" + conditional + ";" + counterVar + direction + "=" + incrementor + ") {");
-    lines.push("// ...");
+    lines.push("// Add code here");
     lines.push("}");
 
     aceAddLinesAt(row, lines);
@@ -758,7 +766,7 @@ function dialogflowAddWhileLoopHandler(row, conditional) {
   if(conditional != null) {
     var lines = []
     lines.push("while (" + conditional + ") {");
-    lines.push("// ...");
+    lines.push("// Add code here");
     lines.push("}");
 
     aceAddLinesAt(row, lines);
@@ -771,7 +779,7 @@ function dialogflowAddIfHandler(row, conditional) {
   if(conditional != null) {
     var lines = []
     lines.push("if (" + conditional + ") {");
-    lines.push("// ...");
+    lines.push("// Add code here");
     lines.push("}");
 
     aceAddLinesAt(row, lines);
@@ -804,7 +812,7 @@ function dialogflowAddElseHandler(row, conditional) {
       lines.push("} else {");
     }
 
-    lines.push("// ...");
+    lines.push("// Add code here");
     lines.push("}");
 
     aceAddLinesAt(row, lines);
@@ -827,7 +835,7 @@ function dialogflowHandler(command) {
   switch(command.action) {
     case "CreateFile":
 
-      //create combined file and pass to create file handler		  
+      //create combined file and pass to create file handler
       // var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
       // //create file
       // dialogflowCreateFileHandler(completeName);
@@ -877,11 +885,11 @@ function dialogflowHandler(command) {
       var print = command.parameters.fields.printHW['stringValue'];
       dialogflowPrintHandler(row, print);
       break;
-	
+
 	case "Print":
 		dialogflowPrintHandler(command.row, command.content);
 		break;
-		
+
     case "AddVariable":
       dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
       break;
