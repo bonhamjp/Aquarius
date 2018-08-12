@@ -72,7 +72,7 @@ function terminalCdProject() {
 // create file
 function terminalCreateFile(filename, callback) {
   // make sure in user project directory
-  
+
   //terminalSetWorkingDirectory();    //Commenting out cause it's causing a bug in the terminal.
 
   // make file
@@ -541,9 +541,9 @@ function createVoiceRecorder() {
 	var constraints = { audio: true };
 	var chunks = [];
 
-     //call getUserMedia, then the magic
-     navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-		// setup media recorder
+  //call getUserMedia, then the magic
+  navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
+    // setup media recorder
 		var mediaRecorder = new MediaRecorder(mediaStream);
 
 		// record when pressed
@@ -551,63 +551,62 @@ function createVoiceRecorder() {
 			 recorder.innerHTML = "Stop";
 			 mediaRecorder.start();
 		 }
-		 
+
 		 mediaRecorder.onstart = function(e){
 		   // stop recording when pressed
 		   recorder.onclick = function() {
 			 recorder.innerHTML = "Record";
 			 mediaRecorder.stop();
 		   }
-	}
-	
-	   
-       // process media when stopped
-       mediaRecorder.onstop = function(e) {
-         // set recording format
-         var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
+     }
 
-         // read recorded value to binary
-         var reader = new FileReader();
-         reader.readAsBinaryString(blob);
-         reader.onloadend = function() {
-           // send to back end to be saved and converted
-           writeFlacFile("recording.flac", "voice", reader.result);
-         }
+     // process media when stopped
+     mediaRecorder.onstop = function(e) {
+       // set recording format
+       var blob = new Blob(chunks, { type : 'audio/ogg; codecs=opus' });
 
-         chunks = [];
-		 
-	//reset mediaRecorder settings
-	recorder.onclick = function() {
-		recorder.innerHTML = "Stop";
-         	mediaRecorder.start();
-	}
-}
+       // read recorded value to binary
+       var reader = new FileReader();
+       reader.readAsBinaryString(blob);
+       reader.onloadend = function() {
+         // send to back end to be saved and converted
+         writeFlacFile("recording.flac", "voice", reader.result);
+       }
 
-      // asynchronous flac file write
-      function writeFlacFile(fileName, folder, content) {
-        $.ajax({
-          type: "POST",
-          url: "/writeflac/" + fileName + "/" + folder,
-          data: { content: content }
-        }).done(function(data) {
-          // username
-          var user = $("#chat-box").data("display-name");
+       chunks = [];
 
-          // write in chat box
-          logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
+       //reset mediaRecorder settings
+       recorder.onclick = function() {
+         recorder.innerHTML = "Stop";
+         mediaRecorder.start();
+       }
+     }
 
-          //send message to dialogflow
-          sendDialogFlow(data);
-        });
-      }
+     // asynchronous flac file write
+     function writeFlacFile(fileName, folder, content) {
+       $.ajax({
+         type: "POST",
+         url: "/writeflac/" + fileName + "/" + folder,
+         data: { content: content }
+       }).done(function(data) {
+         // username
+         var user = $("#chat-box").data("display-name");
 
-      mediaRecorder.ondataavailable = function(e) {
-        chunks.push(e.data);
-      }
-    }).catch(function(err){
-      console.log("yikes, an err!" + err.message);
-    });
-  }
+         // write in chat box
+         logChatMessage(user, MESSAGE_SOURCES.OUTGOING, data);
+
+         //send message to dialogflow
+         sendDialogFlow(data);
+       });
+     }
+
+     mediaRecorder.ondataavailable = function(e) {
+       chunks.push(e.data);
+     }
+   }).catch(function(err){
+     console.log("yikes, an err!" + err.message);
+   });
+ }
 }
 
 // dialogflow error messaging
@@ -707,8 +706,7 @@ function dialogflowDefaultTempHandler(){
    firstBrack.push("// ...");
    aceAddLinesAt(7, firstBrack);
 
-
-   var returnZero = [] 
+   var returnZero = []
    returnZero.push("return 0;");
    aceAddLinesAt(10, returnZero);
 
@@ -782,6 +780,39 @@ function dialogflowAddIfHandler(row, conditional) {
   }
 }
 
+function dialogflowAddElseHandler(row, conditional) {
+  // must add to a row with an ending curly brace
+  var lineToAddTo = row;
+  if(lineToAddTo == null) {
+    // get current cursor position
+    lineToAddTo = editor.getCursorPosition();
+  }
+
+  // check value of line
+  var session = editor.session;
+  if($.trim(session.getLine(lineToAddTo - 1)) == "}") {
+    // remove the line with the ending curly brace
+    aceRemoveLineAt(lineToAddTo);
+
+    // add the else statement
+    var lines = []
+
+    // write else if, if there is a conditional
+    if(conditional != null) {
+      lines.push("} else if (" + conditional + ") {");
+    } else {
+      lines.push("} else {");
+    }
+
+    lines.push("// ...");
+    lines.push("}");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("You can only add else statements to the end of conditional blocks. Sorry! Please try again.");
+  }
+}
+
 function dialogflowRemoveLineHandler(row) {
   if(row != null) {
     aceRemoveLineAt(row);
@@ -795,6 +826,7 @@ function dialogflowRemoveLineHandler(row) {
 function dialogflowHandler(command) {
   switch(command.action) {
     case "CreateFile":
+
       //create combined file and pass to create file handler		  
       // var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
       // //create file
@@ -859,11 +891,15 @@ function dialogflowHandler(command) {
       break;
 
     case "AddWhileLoop":
-        dialogflowAddWhileLoopHandler(command.row, command.conditional);
-        break;
+      dialogflowAddWhileLoopHandler(command.row, command.conditional);
+      break;
 
     case "AddIf":
       dialogflowAddIfHandler(command.row, command.conditional);
+      break;
+
+    case "AddElse":
+      dialogflowAddElseHandler(command.row, command.conditional);
       break;
 
     case "RemoveLine":
