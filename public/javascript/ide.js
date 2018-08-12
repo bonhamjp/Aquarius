@@ -894,9 +894,9 @@ function dialogflowHandler(command) {
       dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
       break;
 
-    case "AddForLoop":
-      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
-      break;
+    //case "AddForLoop":
+    //  dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
+     // break;
 
     case "AddWhileLoop":
       dialogflowAddWhileLoopHandler(command.row, command.conditional);
