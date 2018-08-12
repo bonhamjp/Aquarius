@@ -716,10 +716,9 @@ function dialogflowDefaultTempHandler(){
 }
 
 function dialogflowPrintHandler(row, content){
-  if(row != null && content != null){
-    aceMoveCursorTo(row);
+  if(content != null){
     var printText = []
-    printText.push("cout << \"" + content + "\" << endl;");
+    printText.push("std::cout << \"" + content + "\" << std::endl;");
     aceAddLinesAt(row, printText);
   }
 }
@@ -742,10 +741,10 @@ function dialogflowAddVariableHandler(row, type, name, value) {
   }
 }
 
-function dialogflowAddForLoopHandler(row, counterVar, startingNumber, endingNumber, incrementor) {
-  if(counterVar != null && startingNumber != null && endingNumber != null && incrementor != null) {
+function dialogflowAddForLoopHandler(row, counterVar, startingNumber, conditional, direction, incrementor) {
+  if(counterVar != null && startingNumber != null && conditional != null && direction != null && incrementor != null) {
     var lines = []
-    lines.push("for (int " + counterVar + " = " + startingNumber + ";" + counterVar + " < " + endingNumber + ";" + counterVar + incrementor + ") {");
+    lines.push("for (int " + counterVar + " = " + startingNumber + ";" + conditional + ";" + counterVar + direction + "=" + incrementor + ") {");
     lines.push("// ...");
     lines.push("}");
 
@@ -827,12 +826,14 @@ function dialogflowRemoveLineHandler(row) {
 function dialogflowHandler(command) {
   switch(command.action) {
     case "CreateFile":
-      //create combined file and pass to create file handler
-      var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
-      //create file
-      dialogflowCreateFileHandler(completeName);
-      //change to new file
-      setTimeout(dialogflowChangeFileHandler.bind(null,completeName), 1000);
+
+      //create combined file and pass to create file handler		  
+      // var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
+      // //create file
+      // dialogflowCreateFileHandler(completeName);
+      // //change to new file
+      // setTimeout(dialogflowChangeFileHandler.bind(null,completeName), 1000);
+	  dialogflowCreateFileHandler(command.filename);
       break;
 
     case "DeleteFile":
@@ -876,13 +877,17 @@ function dialogflowHandler(command) {
       var print = command.parameters.fields.printHW['stringValue'];
       dialogflowPrintHandler(row, print);
       break;
-
+	
+	case "Print":
+		dialogflowPrintHandler(command.row, command.content);
+		break;
+		
     case "AddVariable":
       dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
       break;
 
     case "AddForLoop":
-      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.endingNumber, command.incrementor);
+      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
       break;
 
     case "AddWhileLoop":
