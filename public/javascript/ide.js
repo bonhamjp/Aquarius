@@ -736,13 +736,13 @@ function dialogflowPrintHandler(row, content){
 function dialogflowAddVariableHandler(row, type, name, value) {
   if(type != null && name != null) {
     var lines = []
-
-    // if value is defined, add setter in line
-    if(value != null) {
-      lines.push(type + " " + name + " = " + value + ";");
+    console.log("In Handler...Type = " + type);
+    // if type is string, add quotes
+    if(type  == "string") {
+      lines.push(type + " " + name + " = " + "\"" + value + "\";");
     // else only declare variable
     } else {
-      lines.push(type + " " + name + ";");
+      lines.push(type + " " + name + " = " + value + ";");
     }
 
     aceAddLinesAt(row, lines);
@@ -945,11 +945,52 @@ function dialogflowHandler(command) {
       var row = null;
       dialogflowPrintHandler(row, content);
       break;
-/*
-    case "AddVariable":
-      dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
-      break;
 
+    case "AddVariable":
+
+      var name = command.parameters.fields.name.stringValue;
+      var type = command.parameters.fields.type.stringValue;
+      var row = null;
+      var value = command.parameters.fields.value.stringValue;
+
+      //console.log ("Parameters: "+JSON.stringify(command.parameters.fields));
+      if(name !="" && type !="" && value !=""){
+	      console.log("name: "+name);
+	      console.log("type: "+type);
+	      console.log("value: "+value);
+	      
+	      switch(type){
+		      case "integer":
+		              console.log("In Integer Case..");
+			      type = "int";
+	       		      dialogflowAddVariableHandler(row, type, name, value);
+			      break;
+
+		      case "boolean":
+			      console.log("In Boolean Case..");
+			      type = "bool";
+	                      dialogflowAddVariableHandler(row, type, name, value);
+			      break;
+
+	              case "int":
+	                      dialogflowAddVariableHandler(row, type, name, value);
+			      break;
+
+	              case "bool":
+	                      dialogflowAddVariableHandler(row, type, name, value);
+			      break;
+             
+		      case "string":
+	                      dialogflowAddVariableHandler(row, type, name, value);
+			      break;
+
+	              default:
+    			      logDialogflowError("ERROR: Not a supported variable type.");
+
+	      }
+      }
+      break;
+/*
     //case "AddForLoop":
     //  dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
      // break;
