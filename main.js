@@ -304,6 +304,7 @@ function isEmptyObject(obj){
 	return !Object.keys(obj).length;
 }
 
+//word to symbol mapper for conditional statements
 function getConditional(strConditional)
 {
 	if(strConditional.includes("is less than or equal to"))
@@ -409,9 +410,20 @@ app.post("/sendToDialogflow", function(req, res){
 	sessionClient
 	  .detectIntent(request)
 	  .then(responses => {
+      
+      //only for debuggin dialogflow responses		  
       console.log('Detected Intent');
       const result = responses[0].queryResult;
       if(result.intent){
+        console.log(` Intent: ${result.intent.displayName}`);
+       } else {
+         console.log(`No intent matched.`);
+        }
+      console.log(` Action: ${result.action}`);
+      console.log("Parameters: "+JSON.stringify(result.parameters));
+      res.send(result);
+     });
+/*
           console.log(` Intent: ${result.intent.displayName}`);
         } else {
          console.log(`No intent matched.`);
@@ -776,8 +788,9 @@ app.post("/sendToDialogflow", function(req, res){
     .catch(err => {
       console.error('ERROR: ', err);
     });
+*/
 });
-
+/*
 function dialogParser(action, result){
 	
 	var handler = {};
@@ -795,7 +808,7 @@ function dialogParser(action, result){
 			break;
 	}
 }
-	
+*/	
 
 // use port specified in command, if it exists
 var port = parseInt(process.argv.slice(2)) || 3000;

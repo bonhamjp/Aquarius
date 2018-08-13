@@ -632,6 +632,7 @@ function dialogflowCreateFileHandler(filename) {
 
     // refresh nav tree
     setTimeout(updateNavTree, 500);
+
   } else {
     logDialogflowError("The file already exists. Sorry! Please try again.");
   }
@@ -835,15 +836,47 @@ function dialogflowHandler(command) {
   switch(command.action) {
     case "CreateFile":
 
-      //create combined file and pass to create file handler
-      // var completeName = command.parameters.fields.File_NameHW['stringValue']+ "." + command.parameters.fields.File_Type['stringValue'];
-      // //create file
-      // dialogflowCreateFileHandler(completeName);
-      // //change to new file
-      // setTimeout(dialogflowChangeFileHandler.bind(null,completeName), 1000);
-	  dialogflowCreateFileHandler(command.filename);
-      break;
+      var name = command.parameters.fields.filename['stringValue'];
+      var type = command.parameters.fields.filetype['stringValue'];
 
+      //make sure both values exist before creating file
+      if(name != "" && type != ""){
+	     // console.log("File Name: "+name);
+	     // console.log("File Type: "+type);
+	//create new file
+	var fileName = name+"."+type;
+      	dialogflowCreateFileHandler(fileName);
+	setTimeout(dialogflowChangeFileHandler.bind(null, fileName), 1000);
+
+      	//if cpp file, deploy default template
+	if(type == "cpp"){
+                setTimeout(dialogflowDefaultTempHandler, 1200);
+	  }
+      }
+      break;
+    
+    case "MoveCursor":
+
+	var row = command.parameters.fields.row.numberValue;
+	var goToEnd = command.parameters.fields.goToEnd.stringValue;
+	
+	//make sure both values exist
+	if(row != "" && goToEnd != ""){
+	//	console.log("Row: "+row);
+	//	console.log("goToEnd: "+goToEnd);
+		//update goToEnd values
+		if(goToEnd == "yes"){
+			goToEnd = true;
+		} else{
+			goToEnd = false;
+		}
+
+                //move cursor
+		dialogflowMoveCursorHandler(row, goToEnd);
+	}
+        break;
+
+/*
     case "DeleteFile":
       dialogflowDeleteFileHandler(command.filename);
       break;
@@ -851,7 +884,7 @@ function dialogflowHandler(command) {
     case "ChangeFile":
       dialogflowChangeFileHandler(command.filename);
       break;
-
+*/
     case "SaveFile":
       dialogflowSaveFileHandler();
       break;
@@ -859,7 +892,7 @@ function dialogflowHandler(command) {
     case "CompileFile":
       dialogflowCompileFileHandler();
       break;
-
+/*
     case "Default":
      //creates default C++ source file
      dialogflowDefaultTempHandler();
@@ -876,27 +909,22 @@ function dialogflowHandler(command) {
     case "AddNewLine":
       dialogflowAddNewLineHandler(command.row);
       break;
+*/
+    case "Print":
 
-    case "printHW":
-      var row = command.parameters.fields.rowHW['stringValue'];
-      if (row == "five"){
-	      row = 5;
-      }
-      var print = command.parameters.fields.printHW['stringValue'];
-      dialogflowPrintHandler(row, print);
+      var content = command.parameters.fields.content.stringValue;
+      console.log("Content: "+content);
+      var row = null;
+      dialogflowPrintHandler(row, content);
       break;
-
-	case "Print":
-		dialogflowPrintHandler(command.row, command.content);
-		break;
-
+/*
     case "AddVariable":
       dialogflowAddVariableHandler(command.row, command.type, command.name, command.value);
       break;
 
-    case "AddForLoop":
-      dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
-      break;
+    //case "AddForLoop":
+    //  dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
+     // break;
 
     case "AddWhileLoop":
       dialogflowAddWhileLoopHandler(command.row, command.conditional);
@@ -913,7 +941,7 @@ function dialogflowHandler(command) {
     case "RemoveLine":
       dialogflowRemoveLineHandler(command.row);
       break;
-
+*/
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
   }
