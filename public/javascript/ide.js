@@ -965,11 +965,19 @@ function dialogflowHandler(command) {
     case "AddElse":
       dialogflowAddElseHandler(command.row, command.conditional);
       break;
-
-    case "RemoveLine":
-      dialogflowRemoveLineHandler(command.row);
-      break;
 */
+    case "RemoveLine":
+      
+      var row = command.parameters.fields.row.stringValue;
+      var oldRow = command.parameters.fields.row.numberValue;
+      
+      if(row != ""){	
+	console.log("Row: "+row);
+	console.log("OldRow: "+newRow);
+        dialogflowRemoveLineHandler(oldRow);
+      }
+      break;
+
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
   }
