@@ -423,6 +423,372 @@ app.post("/sendToDialogflow", function(req, res){
       console.log("Parameters: "+JSON.stringify(result.parameters));
       res.send(result);
      });
+/*
+          console.log(` Intent: ${result.intent.displayName}`);
+        } else {
+         console.log(`No intent matched.`);
+	   }
+      console.log(` Action: ${result.action}`);
+		  switch(result.action)
+		  {
+			  case "Help":
+			  {
+				  res.send(result);
+				  break;
+			  }
+			  
+			  case "AddVariable":
+			  {
+				  var name = result.parameters.fields.name.stringValue;
+				  var type = result.parameters.fields.type.stringValue;
+				  if(!isEmptyObject(name) && !isEmptyObject(type))
+				  {
+					var handler = {};
+					handler.action = result.action; 
+					handler.name = name;
+					handler.type = type;
+					console.log(handler);
+					res.send(handler);
+				  }
+				  
+				  else
+				  {
+					res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "CreateFile":
+			  {
+					var name = result.parameters.fields.filename.stringValue;
+					var type = result.parameters.fields.filetype.stringValue;
+					if(!isEmptyObject(name) && !isEmptyObject(type))
+					{
+						var handler = {};
+						handler.action = result.action;
+						handler.filename = name + "." + type;
+						console.log(handler)
+						res.send(handler);
+					}
+					
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+			  }
+			  
+			  case "AddWhileLoop":
+			  {
+				    var strConditional = result.parameters.fields.conditional.stringValue;
+			
+					if(!isEmptyObject(strConditional))
+					{
+						var handler = {};
+						
+						var conditional = getConditional(strConditional);
+						
+						handler.action = result.action;
+						handler.conditional = conditional;
+						console.log(handler);
+						res.send(handler);
+					}
+					
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+			  }
+			
+			  case "AddIf":
+			  {
+				  var strConditional = result.parameters.fields.conditional.stringValue;
+			
+					if(!isEmptyObject(strConditional))
+					{
+						var handler = {};
+						
+						var conditional = getConditional(strConditional);
+						
+						handler.action = result.action;
+						handler.conditional = conditional;
+						console.log(handler);
+						res.send(handler);
+					}
+					
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+			  }
+			  
+			  case "Print":
+			  {
+				  var strContent = result.parameters.fields.content.stringValue;
+				  if(!isEmptyObject(strContent))
+				  {
+					  var handler = {};
+					  var content
+					  
+					  if(strContent.includes("print"))
+					  {
+						  match = strContent.match(/print/g);
+						  
+						  content = strContent.replace(match[0], "");
+					  }
+					  
+					  else
+					  {
+						  content = strContent;
+					  }
+					  
+					  handler.action = result.action;
+					  handler.content = content;
+					  console.log(handler);
+					  res.send(handler);
+				  }
+				  
+				  else
+				  {
+					  res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "DeleteFile":
+			  {
+					var name = result.parameters.fields.filename.stringValue;
+					var type = result.parameters.fields.filetype.stringValue;
+					if(!isEmptyObject(name) && !isEmptyObject(type))
+					{
+						var handler = {};
+						handler.action = result.action;
+						handler.filename = name + "." + type;
+						console.log(handler)
+						res.send(handler);
+					}
+					
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+			  }
+			  
+			  case "ChangeFile":
+			  {
+					var name = result.parameters.fields.filename.stringValue;
+					var type = result.parameters.fields.filetype.stringValue;
+					if(!isEmptyObject(name) && !isEmptyObject(type))
+					{
+						var handler = {};
+						handler.action = result.action;
+						handler.filename = name + "." + type;
+						console.log(handler)
+						res.send(handler);
+					}
+					
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+			  }
+			  
+			  case "SaveFile":
+			  {
+				  var handler = {};
+				  handler.action = result.action;
+				  res.send(handler);
+			  }
+			  
+			  case "CompileFile":
+			  {
+				  var handler = {};
+				  handler.action = result.action;
+				  res.send(handler);	
+			  }
+			  
+			  case "AddInclude":
+			  {
+				  var headerName = result.parameters.fields.headerName.stringValue;
+				  var localHeader = result.parameters.fields.localHeader.stringValue;
+				  if(!isEmptyObject(headerName) && !isEmptyObject(localHeader))
+				  {
+					var handler = {};
+					var local;
+					if(localHeader == "yes")
+					{
+						local = true;
+					}
+					
+					else
+					{
+						local = false;
+					}
+					
+					handler.action = result.action;
+					handler.headerName = headerName;
+					handler.localHeader = local;
+					
+					res.send(handler);
+				  }
+				  
+				  else
+				  {
+					  res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "MoveCursor":
+			  {
+				  
+				  var row = result.parameters.fields.row;
+				  var goToEnd = result.parameters.fields.goToEnd.stringValue;
+				  if(!isEmptyObject(row) && !isEmptyObject(goToEnd))
+				  {
+					  row = result.parameters.fields.row.numberValue;
+					var handler = {};
+					var end;
+					if(goToEnd == "yes")
+					{
+						end = true;
+					}
+					
+					else
+					{
+						end = false;
+					}
+					
+					handler.action = result.action;
+					handler.row = row;
+					handler.goToEnd = end;
+					res.send(handler);
+				  }
+				  
+				  else
+				  {
+					  res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "AddNewLine":
+			  {
+				  
+				  var row = result.parameters.fields.row;
+	
+				  if(!isEmptyObject(row))
+				  {
+					row = result.parameters.fields.row.numberValue;
+					var handler = {};
+				
+					handler.action = result.action;
+					handler.row = row;
+					res.send(handler);
+				  }
+				  
+				  else
+				  {
+					 res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "RemoveLine":
+			  {
+				  
+				  var row = result.parameters.fields.row;
+	
+				  if(!isEmptyObject(row))
+				  {
+					row = result.parameters.fields.row.numberValue;
+					var handler = {};
+				
+					handler.action = result.action;
+					handler.row = row;
+					res.send(handler);
+				  }
+				  
+				  else
+				  {
+					 res.send(result);
+				  }
+				  
+				  break;
+			  }
+			  
+			  case "AddForLoop":
+			  {
+				  var counterVar = result.parameters.fields.countingVar.stringValue;
+				  var strConditional = result.parameters.fields.conditional.stringValue;
+				  var direction = result.parameters.fields.direction.stringValue;
+				  var incrementor = result.parameters.fields.incrementor.stingValue;
+				  var startingNumber = result.parameters.fields.startingNumber;
+				  
+				  console.log(JSON.stringify(result.parameters));
+				  
+				  if(!isEmptyObject(counterVar) && !isEmptyObject(strConditional) && !isEmptyObject(direction) && !isEmptyObject(incrementor) && !isEmptyObject(startingNumber))
+					 {
+						 var handler = {};
+						 
+						 startingNumber = result.parameters.fields.startingNumber.numberValue;
+						 
+						 if(direction == "increase")
+						 {
+							 direction = "+";
+						 }
+						 
+						 else
+						 {
+							 direction = "-";
+						 }
+						 
+						 conditional = getConditional(strConditional);
+						 
+						 handler.action = result.action;
+						 handler.counterVar = counterVar;
+						 handler.conditional = conditional;
+						 handler.direction = direction;
+						 handler.incrementor = incrementor;
+						 handler.startingNumber = startingNumber;
+						 console.log(handler);
+						 res.send(handler);
+					 }
+					 
+					else
+					{
+						res.send(result);
+					}
+					
+					break;
+					
+			  }
+			  
+			  default:
+			  {
+				  res.send(result);
+			  }
+						 
+		  }
+	  })
+    .catch(err => {
+      console.error('ERROR: ', err);
+    });
+*/
 });
 /*
 function dialogParser(action, result){
