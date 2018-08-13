@@ -215,45 +215,84 @@
 	color:blue;
 	cursor:pointer;
 }
-.helpTut {
-    position: relative;
-}
 
-.helpTut .helpText {
-    visibility: hidden;
-    width: 120px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -120px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.helpTut .helpText::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #555 transparent transparent transparent;
-}
-
-.helpTut:hover .helpText {
-    visibility: visible;
-    opacity: 1;
-}
-
-#hTut:hover {
+#command1:hover {
 	color:blue;
 	cursor:pointer;
 }
-	
+
+#command2:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command3:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command4:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command5:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command6:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command7:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command8:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command9:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command10:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command11:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command12:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command13:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#command14:hover {
+	color:blue;
+	cursor:pointer;
+}
+
+#tutTitle{
+	padding-left: 65px;
+}
+
+.titles{
+	text-align: center;
+	font-size: 1vw;
+	text-decoration: underline;
+	font-weight: bold;
+}

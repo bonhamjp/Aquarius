@@ -411,14 +411,20 @@ app.post("/sendToDialogflow", function(req, res){
 	  .then(responses => {
       console.log('Detected Intent');
       const result = responses[0].queryResult;
-      // if(result.intent){
-        // console.log(` Intent: ${result.intent.displayName}`);
-      // } else {
-        // console.log(`No intent matched.`);
-		  // }
-      // console.log(` Action: ${result.action}`);
+      if(result.intent){
+          console.log(` Intent: ${result.intent.displayName}`);
+        } else {
+         console.log(`No intent matched.`);
+	   }
+      console.log(` Action: ${result.action}`);
 		  switch(result.action)
 		  {
+			  case "Help":
+			  {
+				  res.send(result);
+				  break;
+			  }
+			  
 			  case "AddVariable":
 			  {
 				  var name = result.parameters.fields.name.stringValue;
@@ -758,6 +764,11 @@ app.post("/sendToDialogflow", function(req, res){
 					
 					break;
 					
+			  }
+			  
+			  default:
+			  {
+				  res.send(result);
 			  }
 						 
 		  }
