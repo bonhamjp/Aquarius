@@ -644,7 +644,8 @@ function dialogflowDeleteFileHandler(filename) {
     terminalDeleteFile(filename);
 
     // refresh nav tree
-    updateNavTree();
+    setTimeout(updateNavTree, 500);
+
   } else {
     logDialogflowError("The file does not exist. Sorry! Please try again.");
   }
@@ -876,15 +877,38 @@ function dialogflowHandler(command) {
 	}
         break;
 
-/*
+
     case "DeleteFile":
-      dialogflowDeleteFileHandler(command.filename);
+      
+      var name = command.parameters.fields.filename['stringValue'];
+      var type = command.parameters.fields.filetype['stringValue'];
+
+      //make sure both values exist before creating file
+      if(name != "" && type != ""){
+	     // console.log("File Name: "+name);
+	     // console.log("File Type: "+type);
+	//create new file
+	var fileName = name+"."+type;
+        dialogflowDeleteFileHandler(fileName);
+      }
       break;
 
     case "ChangeFile":
-      dialogflowChangeFileHandler(command.filename);
+      
+      var name = command.parameters.fields.filename['stringValue'];
+      var type = command.parameters.fields.filetype['stringValue'];
+
+      //make sure both values exist before creating file
+      if(name != "" && type != ""){
+	    // console.log("File Name: "+name);
+	    // console.log("File Type: "+type);
+	//create new file
+	var fileName = name+"."+type;
+        dialogflowChangeFileHandler(fileName);
+      }
+
       break;
-*/
+
     case "SaveFile":
       dialogflowSaveFileHandler();
       break;
@@ -901,15 +925,19 @@ function dialogflowHandler(command) {
     case "AddInclude":
       dialogflowAddInclude(command.headerName, command.localHeader);
       break
-
-    case "MoveCursor":
-      dialogflowMoveCursorHandler(command.row, command.goToEnd);
-      break;
-
-    case "AddNewLine":
-      dialogflowAddNewLineHandler(command.row);
-      break;
 */
+    case "AddNewLine":
+      
+      var row = command.parameters.fields.row.stringValue;
+      var newRow = command.parameters.fields.row.numberValue;
+      
+      if(row != ""){	
+	console.log("Row: "+row);
+	console.log("NewRow: "+newRow);
+        dialogflowAddNewLineHandler(newRow);
+      }
+      break;
+
     case "Print":
 
       var content = command.parameters.fields.content.stringValue;
