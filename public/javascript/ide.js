@@ -727,7 +727,7 @@ function dialogflowDefaultTempHandler(){
 
 function dialogflowPrintHandler(row, content){
   if(content != null){
-    var printText = []
+    var printText = [];
     printText.push("std::cout << \"" + content + "\" << std::endl;");
     aceAddLinesAt(row, printText);
   }
@@ -830,6 +830,17 @@ function dialogflowRemoveLineHandler(row) {
     logDialogflowError("You need to specify which row you would like to remove. Sorry! Please try again.");
   }
 }
+
+function dialogflowAddCommandHandler(row, commandPhrase) {
+	if(commandPhrase != null){
+		var lines = [];
+		lines.push(commandPhrase + ";");
+		aceAddLinesAt(row, lines);
+	} else{
+		logDialogflowError("No command phrase found.");
+	}
+}
+		
 
 // handles all actions returned from dialogflow
 // command should be an object, with at least one property: { action: '' }
@@ -1013,15 +1024,20 @@ function dialogflowHandler(command) {
       var oldRow = command.parameters.fields.row.numberValue;
       
       if(row != ""){	
-	console.log("Row: "+row);
-	console.log("OldRow: "+newRow);
+	      console.log("Row: "+row);
+	      console.log("OldRow: "+newRow);
         dialogflowRemoveLineHandler(oldRow);
       }
       break;
+	
+    case "AddCommand":
+      dialogflowAddCommandHandler(command.row, command.commandPhrase);
+      break;
 
-    default:
-      logDialogflowError("Command not understood. Sorry! Please try again.");
-  }
+      default:
+        logDialogflowError("Command not understood. Sorry! Please try again.");
+    }
+
 }
 
 // setup ide after document is ready

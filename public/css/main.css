@@ -286,6 +286,11 @@
 	cursor:pointer;
 }
 
+#command15:hover {
+	color:blue;
+	cursor:pointer;
+}
+
 #tutTitle{
 	padding-left: 65px;
 }

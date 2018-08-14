@@ -381,6 +381,17 @@ function getConditional(strConditional)
 	return conditional;
 }
 
+function parseOperators(strCommandPhrase)
+{
+	var commandPhrase = strCommandPhrase;
+	
+	if(strCommandPhrase.includes("equals") || strCommandPhrase.includes("plus") || strCommandPhrase.includes("minus") || strCommandPhrase.includes("times") || strCommandPhrase.includes("divided by"))
+	{
+		commandPhrase = strCommandPhrase.replace(/plus/g, "+").replace(/minus/g, "-").replace(/times/g, "*").replace(/divided by/g, "/").replace(/equals/g, "=");
+	}
+	
+	return commandPhrase;
+}
 //sends text to dialogflow
 app.post("/sendToDialogflow", function(req, res){
 	//create variables
@@ -778,6 +789,31 @@ app.post("/sendToDialogflow", function(req, res){
 					
 			  }
 			  
+			  case "AddCommand":
+			  {
+				  var strCommandPhrase = result.parameters.fields.commandPhrase.stringValue;
+				  
+				  if(!isEmptyObject(strCommandPhrase))
+				  {
+					  var handler = {};
+					  
+					  var commandPhrase = parseOperators(strCommandPhrase);
+					  
+					  handler.action = result.action;
+					  handler.commandPhrase = commandPhrase;
+					  
+					  res.send(handler);
+				  }
+				  
+				  else
+				  {
+					  res.send(result);
+				  }
+				  
+				  break;
+				  
+			  }
+
 			  default:
 			  {
 				  res.send(result);
