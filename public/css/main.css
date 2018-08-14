@@ -9,7 +9,7 @@
 	padding: 0 !important;
 	margin: 0 !important;
 }
-
+/*
 #title{
 	text-align:center;
 	margin:auto;
@@ -29,6 +29,10 @@
 
 #sign-in:hover{
 	box-shadow: 5px 5px 2px gray;
+}
+*/
+.topPad{
+	padding-top: 5%;
 }
 
 #siError{
