@@ -9,28 +9,26 @@
 	padding: 0 !important;
 	margin: 0 !important;
 }
-/*
-#title{
-	text-align:center;
-	margin:auto;
-	padding-bottom:10px;
+.darkGoldBG{
+	background-color:#B58900;
 }
 
-#sign-in{
-	border-style: solid;
-	border-radius:15px;
-	border-width:1px;
-	border-color:gray;
-	text-align:center;
-	margin:auto;
-	width:300px;
-	padding-bottom:10px;
+.darkGold{
+	color: #B58900;
 }
 
-#sign-in:hover{
-	box-shadow: 5px 5px 2px gray;
+.lightBlue{
+	color: #268BD2;
 }
-*/
+
+.lightBlueBG{
+	background-color: #268BD2;
+}
+
+.innerWhite{
+	color: white;
+}
+
 .topPad{
 	padding-top: 5%;
 }
@@ -54,7 +52,7 @@
 #chat-history-container {
 	margin: 0px 0px 10px 0px;
 	border: 1px solid #dee2e6;
-	height: 600px;
+	height: 550px;
 	overflow: scroll;
 }
 
@@ -295,13 +293,3 @@
 	cursor:pointer;
 }
 
-#tutTitle{
-	padding-left: 65px;
-}
-
-.titles{
-	text-align: center;
-	font-size: 1vw;
-	text-decoration: underline;
-	font-weight: bold;
-}
