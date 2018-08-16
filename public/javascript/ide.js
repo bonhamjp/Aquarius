@@ -711,6 +711,9 @@ function dialogflowDeleteFileHandler(filename) {
     // refresh nav tree
     setTimeout(updateNavTree, 500);
 
+    // clear the editor
+    editor.setValue("");
+
   } else {
     logDialogflowError("The file does not exist. Sorry! Please try again.");
   }
@@ -1125,12 +1128,13 @@ $(document).ready(function() {
 //get which tutorial the user wants to start and send it to dialogflow
 $(document).click(function(event) {
   var text = $(event.target).text();
-  switch (text) {
-    case "Basic Tutorial":
-      sendDialogFlow("hello");
-      break;
-    case "Advanced Tutorial":
-      sendDialogFlow("start advanced tutorial");
-      break;
-  }
+	switch(text)
+	{
+		case "Basic Tutorial":
+			sendDialogFlow("start basic tutorial");
+			break;
+		case "Advanced Tutorial":
+			sendDialogFlow("start advanced tutorial");
+			break;
+	}
 });
