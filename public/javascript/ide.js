@@ -646,6 +646,9 @@ function dialogflowDeleteFileHandler(filename) {
     // refresh nav tree
     setTimeout(updateNavTree, 500);
 
+    // clear the editor
+    editor.setValue("");
+
   } else {
     logDialogflowError("The file does not exist. Sorry! Please try again.");
   }
