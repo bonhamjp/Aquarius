@@ -1058,7 +1058,7 @@ $(document).click(function(event) {
 	switch(text)
 	{
 		case "Basic Tutorial":
-			sendDialogFlow("hello");
+			sendDialogFlow("start basic tutorial");
 			break;
 		case "Advanced Tutorial":
 			sendDialogFlow("start advanced tutorial");
