@@ -751,10 +751,22 @@ function dialogflowAddVariableHandler(row, type, name, value) {
   }
 }
 
-function dialogflowAddForLoopHandler(row, counterVar, startingNumber, conditional, direction, incrementor) {
-  if(counterVar != null && startingNumber != null && conditional != null && direction != null && incrementor != null) {
+function dialogflowAddForLoopHandler(row, countingVar, startingNumber, conditional, direction, incrementor) {
+  console.log("conditional: " + conditional);
+  console.log("countingVar: " + countingVar);
+  console.log("direction: " + direction);
+  console.log("incrementor: " + incrementor);
+  console.log("startingNumber: " + startingNumber);
+  console.log("-----------------------------------");
+
+  if(countingVar != null && startingNumber != null && conditional != null && direction != null && incrementor != null) {
+    var operatorSymbol = "+";
+    if(direction != "increase") {
+      operatorSymbol = "-";
+    }
+
     var lines = []
-    lines.push("for (int " + counterVar + " = " + startingNumber + ";" + conditional + ";" + counterVar + direction + "=" + incrementor + ") {");
+    lines.push("for (int " + countingVar + " = " + startingNumber + ";" + conditional + ";" + countingVar + operatorSymbol + "=" + incrementor + ") {");
     lines.push("// Add code here");
     lines.push("}");
 
@@ -840,57 +852,52 @@ function dialogflowAddCommandHandler(row, commandPhrase) {
 		logDialogflowError("No command phrase found.");
 	}
 }
-		
+
 
 // handles all actions returned from dialogflow
 // command should be an object, with at least one property: { action: '' }
 function dialogflowHandler(command) {
+  // console.log(command);
+
   switch(command.action) {
     case "CreateFile":
-
       var name = command.parameters.fields.filename['stringValue'];
       var type = command.parameters.fields.filetype['stringValue'];
 
       //make sure both values exist before creating file
-      if(name != "" && type != ""){
-	     // console.log("File Name: "+name);
-	     // console.log("File Type: "+type);
-	//create new file
-	var fileName = name+"."+type;
-      	dialogflowCreateFileHandler(fileName);
-	setTimeout(dialogflowChangeFileHandler.bind(null, fileName), 1000);
+      if(name != "" && type != "") {
+        // create new file
+        var fileName = name+"."+type;
 
-      	//if cpp file, deploy default template
-	if(type == "cpp"){
-                setTimeout(dialogflowDefaultTempHandler, 1200);
-	  }
+        dialogflowCreateFileHandler(fileName);
+        setTimeout(dialogflowChangeFileHandler.bind(null, fileName), 1000);
+
+        // if cpp file, deploy default template
+        if(type == "cpp") {
+          setTimeout(dialogflowDefaultTempHandler, 1200);
+        }
       }
       break;
-    
+
     case "MoveCursor":
+      var row = command.parameters.fields.row.numberValue;
+      var goToEnd = command.parameters.fields.goToEnd.stringValue;
 
-	var row = command.parameters.fields.row.numberValue;
-	var goToEnd = command.parameters.fields.goToEnd.stringValue;
-	
-	//make sure both values exist
-	if(row != "" && goToEnd != ""){
-	//	console.log("Row: "+row);
-	//	console.log("goToEnd: "+goToEnd);
-		//update goToEnd values
-		if(goToEnd == "yes"){
-			goToEnd = true;
-		} else{
-			goToEnd = false;
-		}
+      //make sure both values exist
+      if(row != "" && goToEnd != ""){
+        if(goToEnd == "yes") {
+          goToEnd = true;
+        } else{
+          goToEnd = false;
+        }
 
-                //move cursor
-		dialogflowMoveCursorHandler(row, goToEnd);
-	}
-        break;
-
+        // move cursor
+        dialogflowMoveCursorHandler(row, goToEnd);
+      }
+      break;
 
     case "DeleteFile":
-      
+
       var name = command.parameters.fields.filename['stringValue'];
       var type = command.parameters.fields.filetype['stringValue'];
 
@@ -905,7 +912,7 @@ function dialogflowHandler(command) {
       break;
 
     case "ChangeFile":
-      
+
       var name = command.parameters.fields.filename['stringValue'];
       var type = command.parameters.fields.filetype['stringValue'];
 
@@ -913,7 +920,7 @@ function dialogflowHandler(command) {
       if(name != "" && type != ""){
 	    // console.log("File Name: "+name);
 	    // console.log("File Type: "+type);
-	//create new file
+	    //create new file
 	var fileName = name+"."+type;
         dialogflowChangeFileHandler(fileName);
       }
@@ -927,7 +934,7 @@ function dialogflowHandler(command) {
     case "CompileFile":
       dialogflowCompileFileHandler();
       break;
-/*
+
     case "Default":
      //creates default C++ source file
      dialogflowDefaultTempHandler();
@@ -938,19 +945,19 @@ function dialogflowHandler(command) {
       break
 */
     case "AddNewLine":
-      
+
       var row = command.parameters.fields.row.stringValue;
       var newRow = command.parameters.fields.row.numberValue;
-      
-      if(row != ""){	
+
+      if(row != ""){
 	console.log("Row: "+row);
 	console.log("NewRow: "+newRow);
         dialogflowAddNewLineHandler(newRow);
       }
       break;
 
-    case "Print":
 
+    case "Print":
       var content = command.parameters.fields.content.stringValue;
       console.log("Content: "+content);
       var row = null;
@@ -969,7 +976,7 @@ function dialogflowHandler(command) {
 	      console.log("name: "+name);
 	      console.log("type: "+type);
 	      console.log("value: "+value);
-	      
+
 	      switch(type){
 		      case "integer":
 		              console.log("In Integer Case..");
@@ -990,7 +997,7 @@ function dialogflowHandler(command) {
 	              case "bool":
 	                      dialogflowAddVariableHandler(row, type, name, value);
 			      break;
-             
+
 		      case "string":
 	                      dialogflowAddVariableHandler(row, type, name, value);
 			      break;
@@ -1001,11 +1008,21 @@ function dialogflowHandler(command) {
 	      }
       }
       break;
-/*
-    //case "AddForLoop":
-    //  dialogflowAddForLoopHandler(command.row, command.counterVar, command.startingNumber, command.conditional, command.direction, command.incrementor);
-     // break;
 
+    case "AddForLoop":
+      if(command.allRequiredParamsPresent) {
+        var fields = command.parameters.fields;
+        var conditional = fields.conditional['stringValue'];
+        var countingVar = fields.countingVar['stringValue'];
+        var direction = fields.direction['stringValue'];
+        var incrementor = fields.incrementor['stringValue'];
+        var startingNumber = fields.startingNumber['numberValue'];
+
+        dialogflowAddForLoopHandler(null, countingVar, startingNumber, conditional, direction, incrementor);
+      }
+      break;
+
+/*
     case "AddWhileLoop":
       dialogflowAddWhileLoopHandler(command.row, command.conditional);
       break;
@@ -1019,17 +1036,17 @@ function dialogflowHandler(command) {
       break;
 */
     case "RemoveLine":
-      
+
       var row = command.parameters.fields.row.stringValue;
       var oldRow = command.parameters.fields.row.numberValue;
-      
-      if(row != ""){	
+
+      if(row != ""){
 	      console.log("Row: "+row);
 	      console.log("OldRow: "+newRow);
         dialogflowRemoveLineHandler(oldRow);
       }
       break;
-	
+
     case "AddCommand":
       dialogflowAddCommandHandler(command.row, command.commandPhrase);
       break;
@@ -1038,6 +1055,10 @@ function dialogflowHandler(command) {
         logDialogflowError("Command not understood. Sorry! Please try again.");
     }
 
+
+    default:
+      logDialogflowError("Command not understood. Sorry! Please try again.");
+  }
 }
 
 // setup ide after document is ready
