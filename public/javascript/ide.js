@@ -646,6 +646,9 @@ function dialogflowDeleteFileHandler(filename) {
     // refresh nav tree
     setTimeout(updateNavTree, 500);
 
+    // clear the editor
+    editor.setValue("");
+
   } else {
     logDialogflowError("The file does not exist. Sorry! Please try again.");
   }
@@ -1058,7 +1061,7 @@ $(document).click(function(event) {
 	switch(text)
 	{
 		case "Basic Tutorial":
-			sendDialogFlow("hello");
+			sendDialogFlow("start basic tutorial");
 			break;
 		case "Advanced Tutorial":
 			sendDialogFlow("start advanced tutorial");
