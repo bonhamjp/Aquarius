@@ -1057,8 +1057,11 @@ function dialogflowHandler(command) {
       break;
 
     case "AddInclude":
-      if (command.allRequiredParamsPresent) {
-        var headerName = command.parameters.fields.headerName.stringValue;
+      if(command.allRequiredParamsPresent)
+      {
+        var name = command.parameters.fields.headerName.stringValue;
+        var type = command.parameters.fields.filetype['stringValue'];
+        var headerName = name + "." + type.toLowerCase();
         var localHeader = command.parameters.fields.localHeader.stringValue;
         dialogflowAddInclude(headerName, localHeader);
       }
@@ -1084,44 +1087,61 @@ function dialogflowHandler(command) {
       var name = command.parameters.fields.name.stringValue;
       var strType = command.parameters.fields.type.stringValue;
       var value = command.parameters.fields.value.stringValue;
+      if (name != "" && strType != "" && value != ""){
+		
+      var type = strType;
 
-      if (name != "" && strType != "" && value != "") {
-        if(strType != "int") {
-          strType = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
+      if(type != "int")
+      {
+        if(type.includes("inter"))
+        {
+          type = strType.replace("inter", "int");
         }
-
-        switch (strType) {
-          case "integer":
-            var type = "int";
-            dialogflowAddVariableHandler(null, type, name, value);
-            break;
-
-          case "boolean":
-            var type = "bool";
-            dialogflowAddVariableHandler(null, type, name, value);
-            break;
-
-          case "int":
-            var type = "int";
-            dialogflowAddVariableHandler(null, type, name, value);
-            break;
-
-          case "bool":
-            var type = "bool";
-            dialogflowAddVariableHandler(null, type, name, value);
-            break;
-
-          case "string":
-            var type = "string";
-            dialogflowAddVariableHandler(null, type, name, value);
-            break;
-
-          default:
-            logDialogflowError("ERROR: Not a supported variable type.");
-
+        else if(type.includes("inte"))
+        {
+          type = strType.replace("inte", "int");
         }
-      }
-      break;
+        else if(type.includes("it")){
+          type = strType.replace("it", "int");
+        }
+        else if(type != "string" && type != "integer" && type.includes("in"))
+        {
+          type = strType.replace("in", "int");
+        }
+      }		
+
+      switch (type) {
+            case "integer":
+              var type = "int";
+              dialogflowAddVariableHandler(null, type, name, value);
+              break;
+
+            case "boolean":
+              var type = "bool";
+              dialogflowAddVariableHandler(null, type, name, value);
+              break;
+
+            case "int":
+              var type = "int";
+              dialogflowAddVariableHandler(null, type, name, value);
+              break;
+
+            case "bool":
+              var type = "bool";
+              dialogflowAddVariableHandler(null, type, name, value);
+              break;
+
+            case "string":
+              var type = "string";
+              dialogflowAddVariableHandler(null, type, name, value);
+              break;
+
+            default:
+              logDialogflowError("ERROR: Not a supported variable type.");
+
+          }
+        }
+        break;
 
     case "AddForLoop":
       if (command.allRequiredParamsPresent) {
@@ -1176,13 +1196,14 @@ function dialogflowHandler(command) {
       break;
 
     case "AddCommand":
-      if (command.allRequiredParamsPresent) {
+      if(command.allRequiredParamsPresent) {
         var fields = command.parameters.fields;
         var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
         dialogflowAddCommandHandler(null, parsedCommand);
-        break;
       }
 
+      break;	
+      
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
   }
