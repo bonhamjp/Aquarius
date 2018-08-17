@@ -1087,10 +1087,29 @@ function dialogflowHandler(command) {
       var name = command.parameters.fields.name.stringValue;
       var strType = command.parameters.fields.type.stringValue;
       var value = command.parameters.fields.value.stringValue;
-
-      if (name != "" && strType != "" && value != "") {
-
-		var type = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
+	
+      if (name != "" && strType != "" && value != ""){
+		
+		var type = strType;
+		
+		if(type != "int")
+		{
+			if(type.includes("inter"))
+			{
+				type = strType.replace("inter", "int");
+			}
+			else if(type.includes("inte"))
+			{
+				type = strType.replace("inte", "int");
+			}
+			else if(type.includes("it")){
+				type = strType.replace("it", "int");
+			}
+			else if(type != "string" && type != "integer" && type.includes("in"))
+			{
+				type = strType.replace("in", "int");
+			}
+		}		
 
 		switch (type) {
           case "integer":
