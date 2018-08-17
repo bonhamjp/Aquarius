@@ -7,3 +7,9 @@
 
 # do not exclude workspaces itself
 !workspaces/.gitkeep
+
+# exclude everything in config
+/config/*
+
+# do not exclude config itself
+!config/.gitkeep

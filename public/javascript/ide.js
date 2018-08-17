@@ -24,7 +24,7 @@ function createTerminal() {
   var aquariusPort = $terminal.data("aquarius-port");
 
   // sets up websocket
-  var socketURL = 'ws://' + aquariusDomain + ':' + aquariusPort + '/';
+  var socketURL = 'wss://' + aquariusDomain + ':' + aquariusPort + '/';
   socket = new WebSocket(socketURL);
 
   socket.onopen = function() {
@@ -653,65 +653,65 @@ function createVoiceRecorder() {
 // word to symbol mapper for conditional statements
 function parseOperators(strCommandPhrase) {
   return strCommandPhrase
-		.replace(/ten/g, "10")
-		.replace(/eleven/g, "11")
-		.replace(/twelve/g, "12")
-		.replace(/thirteen/g, "13")
-		.replace(/fourteen/g, "14")
-		.replace(/fifteen/g, "15")
-		.replace(/sixteen/g, "16")
-		.replace(/seventeen/g, "17")
-		.replace(/eighteen/g, "18")
-		.replace(/nineteen/g, "19")
-		.replace(/twenty/g, "20")
-		.replace(/thirty/g, "30")
-		.replace(/forty/g, "40")
-		.replace(/fifty/g, "50")
-		.replace(/sixty/g, "60")
-		.replace(/seventy/g, "70")
-		.replace(/eighty/g, "80")
-		.replace(/ninety/g, "90")
-		.replace(/zero/g, "0")
-		.replace(/one/g, "1")
-		.replace(/two/g, "2")
-		.replace(/three/g, "3")
-		.replace(/four/g, "4")
-		.replace(/five/g, "5")
-		.replace(/six/g, "6")
-		.replace(/seven/g, "7")
-		.replace(/eight/g, "8")
-		.replace(/nine/g, "9")
-		.replace(/0 1/g, "1")
-		.replace(/0 2/g, "2")
-		.replace(/0 3/g, "3")
-		.replace(/0 4/g, "4")
-		.replace(/0 5/g, "5")
-		.replace(/0 6/g, "6")
-		.replace(/0 7/g, "7")
-		.replace(/0 8/g, "8")
-		.replace(/0 9/g, "9")
-		.replace(/plus/g, "+")
-		.replace(/minus/g, "-")
-		.replace(/times/g, "*")
-		.replace(/divided by/g, "/")
-		.replace(/equals/g, "=")
-		.replace(/modulo/g, "%")
-		.replace(/mod/g, "%")
-		.replace(/and/g, "&&")
-		.replace(/is less than or equal to/g, "<=")
-		.replace(/less than or equal to/g, "<=")
-		.replace(/is less than/g, "<")
-		.replace(/less than/g, "<")
-		.replace(/is greater than or equal to/g, ">=")
-		.replace(/greater than or equal to/g, ">=")
-		.replace(/is greater than/g, ">")
-		.replace(/greater than/g, ">")
-		.replace(/is equal to/g, "==")
-		.replace(/is not equal to/g, "!=")
-		.replace(/not equal to/g, "!=")
-		.replace(/is equal to/g, "==")
-		.replace(/equal to/g, "==")
-		.replace(/or/g, "||");
+    .replace(/ten/g, "10")
+    .replace(/eleven/g, "11")
+    .replace(/twelve/g, "12")
+    .replace(/thirteen/g, "13")
+    .replace(/fourteen/g, "14")
+    .replace(/fifteen/g, "15")
+    .replace(/sixteen/g, "16")
+    .replace(/seventeen/g, "17")
+    .replace(/eighteen/g, "18")
+    .replace(/nineteen/g, "19")
+    .replace(/twenty/g, "20")
+    .replace(/thirty/g, "30")
+    .replace(/forty/g, "40")
+    .replace(/fifty/g, "50")
+    .replace(/sixty/g, "60")
+    .replace(/seventy/g, "70")
+    .replace(/eighty/g, "80")
+    .replace(/ninety/g, "90")
+    .replace(/zero/g, "0")
+    .replace(/one/g, "1")
+    .replace(/two/g, "2")
+    .replace(/three/g, "3")
+    .replace(/four/g, "4")
+    .replace(/five/g, "5")
+    .replace(/six/g, "6")
+    .replace(/seven/g, "7")
+    .replace(/eight/g, "8")
+    .replace(/nine/g, "9")
+    .replace(/0 1/g, "1")
+    .replace(/0 2/g, "2")
+    .replace(/0 3/g, "3")
+    .replace(/0 4/g, "4")
+    .replace(/0 5/g, "5")
+    .replace(/0 6/g, "6")
+    .replace(/0 7/g, "7")
+    .replace(/0 8/g, "8")
+    .replace(/0 9/g, "9")
+    .replace(/plus/g, "+")
+    .replace(/minus/g, "-")
+    .replace(/times/g, "*")
+    .replace(/divided by/g, "/")
+    .replace(/equals/g, "=")
+    .replace(/modulo/g, "%")
+    .replace(/mod/g, "%")
+    .replace(/and/g, "&&")
+    .replace(/is less than or equal to/g, "<=")
+    .replace(/less than or equal to/g, "<=")
+    .replace(/is less than/g, "<")
+    .replace(/less than/g, "<")
+    .replace(/is greater than or equal to/g, ">=")
+    .replace(/greater than or equal to/g, ">=")
+    .replace(/is greater than/g, ">")
+    .replace(/greater than/g, ">")
+    .replace(/is equal to/g, "==")
+    .replace(/is not equal to/g, "!=")
+    .replace(/not equal to/g, "!=")
+    .replace(/is equal to/g, "==")
+    .replace(/equal to/g, "==")
+    .replace(/or/g, "||");
 }
 
 // dialogflow error messaging
@@ -828,12 +828,11 @@ function dialogflowDefaultTempHandler() {
 function dialogflowPrintHandler(row, content, type) {
   if (content != null) {
     var printText = [];
-    if(type == "string"){
-		printText.push("std::cout << \"" + content + "\" << std::endl;");
-	}
-	else{
-		printText.push("std::cout << " + content + " << std::endl;");
-	}
+    if (type == "string") {
+      printText.push("std::cout << \"" + content + "\" << std::endl;");
+    } else {
+      printText.push("std::cout << " + content + " << std::endl;");
+    }
     aceAddLinesAt(row, printText);
   }
 }
@@ -1058,12 +1057,11 @@ function dialogflowHandler(command) {
       break;
 
     case "AddInclude":
-		if(command.allRequiredParamsPresent)
-		{
-			var headerName = command.parameters.fields.headerName.stringValue;
-			var localHeader = command.parameters.fields.localHeader.stringValue;
-		  dialogflowAddInclude(headerName, localHeader);
-		}
+      if (command.allRequiredParamsPresent) {
+        var headerName = command.parameters.fields.headerName.stringValue;
+        var localHeader = command.parameters.fields.localHeader.stringValue;
+        dialogflowAddInclude(headerName, localHeader);
+      }
       break;
 
     case "AddNewLine":
@@ -1075,12 +1073,11 @@ function dialogflowHandler(command) {
       break;
 
     case "Print":
-	  if(command.allRequiredParamsPresent)
-	  {
-		  var content = command.parameters.fields.content.stringValue;
-		  var type = command.parameters.fields.type.stringValue;
-		  dialogflowPrintHandler(null, content, type.toLowerCase());
-	  }
+      if (command.allRequiredParamsPresent) {
+        var content = command.parameters.fields.content.stringValue;
+        var type = command.parameters.fields.type.stringValue;
+        dialogflowPrintHandler(null, content, type.toLowerCase());
+      }
       break;
 
     case "AddVariable":
@@ -1089,10 +1086,11 @@ function dialogflowHandler(command) {
       var value = command.parameters.fields.value.stringValue;
 
       if (name != "" && strType != "" && value != "") {
+        if(strType != "int") {
+          strType = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
+        }
 
-		var type = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
-
-		switch (type) {
+        switch (strType) {
           case "integer":
             var type = "int";
             dialogflowAddVariableHandler(null, type, name, value);
@@ -1162,11 +1160,11 @@ function dialogflowHandler(command) {
       }
       break;
 
-	case "AddElse":
-    if (command.allRequiredParamsPresent) {
-      dialogflowAddElseHandler(null);
-      break;
-    }
+    case "AddElse":
+      if (command.allRequiredParamsPresent) {
+        dialogflowAddElseHandler(null);
+        break;
+      }
 
     case "RemoveLine":
       var row = command.parameters.fields.row.stringValue;
@@ -1178,12 +1176,12 @@ function dialogflowHandler(command) {
       break;
 
     case "AddCommand":
-	  if(command.allRequiredParamsPresent) {
-		  var fields = command.parameters.fields;
-      var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
-		  dialogflowAddCommandHandler(null, parsedCommand);
-		  break;
-	  }
+      if (command.allRequiredParamsPresent) {
+        var fields = command.parameters.fields;
+        var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
+        dialogflowAddCommandHandler(null, parsedCommand);
+        break;
+      }
 
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
@@ -1205,13 +1203,12 @@ $(document).ready(function() {
 //get which tutorial the user wants to start and send it to dialogflow
 $(document).click(function(event) {
   var text = $(event.target).text();
-	switch(text)
-	{
-		case "Basic Tutorial":
-			sendDialogFlow("start basic tutorial");
-			break;
-		case "Advanced Tutorial":
-			sendDialogFlow("start advanced tutorial");
-			break;
-	}
+  switch (text) {
+    case "Basic Tutorial":
+      sendDialogFlow("start basic tutorial");
+      break;
+    case "Advanced Tutorial":
+      sendDialogFlow("start advanced tutorial");
+      break;
+  }
 });
