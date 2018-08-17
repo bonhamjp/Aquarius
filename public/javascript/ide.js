@@ -1204,9 +1204,11 @@ function dialogflowHandler(command) {
 		  var fields = command.parameters.fields;
       var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
 		  dialogflowAddCommandHandler(null, parsedCommand);
-		  break;
+		  
 	  }
-
+	  
+	  break;	
+		
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
   }
