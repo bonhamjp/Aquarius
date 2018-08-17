@@ -651,35 +651,67 @@ function createVoiceRecorder() {
 
 // dialogflow helpers
 // word to symbol mapper for conditional statements
-function stringToConditional(strConditional) {
-  if(strConditional.includes("is less than or equal to")) {
-    return strConditional.replace("is less than or equal to", "<=");
-  } else if (strConditional.includes("less than or equal to")) {
-    return strConditional.replace("less than or equal to", "<=");
-  } else if (strConditional.includes("is less than")) {
-    return strConditional.replace("is less than", "<");
-  } else if (strConditional.includes("less than")) {
-    return strConditional.replace("less than", "<");
-  } else if (strConditional.includes("is greater than or equal to")) {
-    return strConditional.replace("is greater than or equal to", ">=");
-  } else if (strConditional.includes("greater than or equal to")) {
-    return strConditional.replace("greater than or equal to", ">=");
-  } else if (strConditional.includes("is greater than")) {
-    return strConditional.replace("is greater than", ">");
-  } else if (strConditional.includes("greater than")) {
-    return strConditional.replace("greater than", ">");
-  } else if (strConditional.includes("is equal to")) {
-    return strConditional.replace("is equal to", "==");
-  } else if (strConditional.includes("equal to")) {
-    return strConditional.replace("equal to", "==");
-  }
-
-  // didn't match, return original string
-  return strConditional;
-}
-
 function parseOperators(strCommandPhrase) {
-  return strCommandPhrase.replace("plus", "+").replace("minus", "-").replace("times", "*").replace("divided by", "/").replace("equals", "=");
+  return strCommandPhrase
+		.replace(/ten/g, "10")
+		.replace(/eleven/g, "11")
+		.replace(/twelve/g, "12")
+		.replace(/thirteen/g, "13")
+		.replace(/fourteen/g, "14")
+		.replace(/fifteen/g, "15")
+		.replace(/sixteen/g, "16")
+		.replace(/seventeen/g, "17")
+		.replace(/eighteen/g, "18")
+		.replace(/nineteen/g, "19")
+		.replace(/twenty/g, "20")
+		.replace(/thirty/g, "30")
+		.replace(/forty/g, "40")
+		.replace(/fifty/g, "50")
+		.replace(/sixty/g, "60")
+		.replace(/seventy/g, "70")
+		.replace(/eighty/g, "80")
+		.replace(/ninety/g, "90")
+		.replace(/zero/g, "0")
+		.replace(/one/g, "1")
+		.replace(/two/g, "2")
+		.replace(/three/g, "3")
+		.replace(/four/g, "4")
+		.replace(/five/g, "5")
+		.replace(/six/g, "6")
+		.replace(/seven/g, "7")
+		.replace(/eight/g, "8")
+		.replace(/nine/g, "9")
+		.replace(/0 1/g, "1")
+		.replace(/0 2/g, "2")
+		.replace(/0 3/g, "3")
+		.replace(/0 4/g, "4")
+		.replace(/0 5/g, "5")
+		.replace(/0 6/g, "6")
+		.replace(/0 7/g, "7")
+		.replace(/0 8/g, "8")
+		.replace(/0 9/g, "9")
+		.replace(/plus/g, "+")
+		.replace(/minus/g, "-")
+		.replace(/times/g, "*")
+		.replace(/divided by/g, "/")
+		.replace(/equals/g, "=")
+		.replace(/modulo/g, "%")
+		.replace(/mod/g, "%")
+		.replace(/and/g, "&&")
+		.replace(/is less than or equal to/g, "<=")
+		.replace(/less than or equal to/g, "<=")
+		.replace(/is less than/g, "<")
+		.replace(/less than/g, "<")
+		.replace(/is greater than or equal to/g, ">=")
+		.replace(/greater than or equal to/g, ">=")
+		.replace(/is greater than/g, ">")
+		.replace(/greater than/g, ">")
+		.replace(/is equal to/g, "==")
+		.replace(/is not equal to/g, "!=")
+		.replace(/not equal to/g, "!=")
+		.replace(/is equal to/g, "==")
+		.replace(/equal to/g, "==")
+		.replace(/or/g, "||");
 }
 
 // dialogflow error messaging
@@ -741,7 +773,7 @@ function dialogflowAddInclude(headerName, localHeader) {
     var lines = []
 
     // if value is defined, add setter in line
-    if (localHeader) {
+    if (localHeader == "yes") {
       lines.push("#include " + "\"" + headerName + "\"");
       // else only declare variable
     } else {
@@ -793,10 +825,15 @@ function dialogflowDefaultTempHandler() {
   aceAddLinesAt(11, lastBrack);
 }
 
-function dialogflowPrintHandler(row, content) {
+function dialogflowPrintHandler(row, content, type) {
   if (content != null) {
     var printText = [];
-    printText.push("std::cout << \"" + content + "\" << std::endl;");
+    if(type == "string"){
+		printText.push("std::cout << \"" + content + "\" << std::endl;");
+	}
+	else{
+		printText.push("std::cout << " + content + " << std::endl;");
+	}
     aceAddLinesAt(row, printText);
   }
 }
@@ -804,7 +841,6 @@ function dialogflowPrintHandler(row, content) {
 function dialogflowAddVariableHandler(row, type, name, value) {
   if (type != null && name != null) {
     var lines = []
-    console.log("In Handler...Type = " + type);
     // if type is string, add quotes
     if (type == "string") {
       lines.push(type + " " + name + " = " + "\"" + value + "\";");
@@ -827,7 +863,7 @@ function dialogflowAddForLoopHandler(row, countingVar, startingNumber, condition
     }
 
     // replace text version of conditional, if any
-    var conditionalWithSymbol = stringToConditional(conditional);
+    var conditionalWithSymbol = parseOperators(conditional);
 
     var lines = []
     lines.push("for (int " + countingVar + " = " + startingNumber + ";" + conditionalWithSymbol + ";" + countingVar + operatorSymbol + "=" + incrementor + ") {");
@@ -843,7 +879,7 @@ function dialogflowAddForLoopHandler(row, countingVar, startingNumber, condition
 function dialogflowAddWhileLoopHandler(row, conditional) {
   if (conditional != null) {
     // replace text version of conditional, if any
-    var conditionalWithSymbol = stringToConditional(conditional);
+    var conditionalWithSymbol = parseOperators(conditional);
 
     var lines = []
     lines.push("while (" + conditionalWithSymbol + ") {");
@@ -859,7 +895,7 @@ function dialogflowAddWhileLoopHandler(row, conditional) {
 function dialogflowAddIfHandler(row, conditional) {
   if (conditional != null) {
     // replace text version of conditional, if any
-    var conditionalWithSymbol = stringToConditional(conditional);
+    var conditionalWithSymbol = parseOperators(conditional);
 
     var lines = []
     lines.push("if (" + conditionalWithSymbol + ") {");
@@ -872,7 +908,35 @@ function dialogflowAddIfHandler(row, conditional) {
   }
 }
 
-function dialogflowAddElseHandler(row, conditional) {
+function dialogflowAddElseHandler(row) {
+  // must add to a row with an ending curly brace
+  var lineToAddTo = row;
+  if (lineToAddTo == null) {
+    // get current cursor position
+    lineToAddTo = editor.getCursorPosition();
+  }
+
+  // check value of line
+  var session = editor.session;
+  if ($.trim(session.getLine(lineToAddTo - 1)) == "}") {
+    // remove the line with the ending curly brace
+    aceRemoveLineAt(lineToAddTo);
+
+    // add the else statement
+    var lines = []
+
+    lines.push("} else {");
+
+    lines.push("// Add code here");
+    lines.push("}");
+
+    aceAddLinesAt(row, lines);
+  } else {
+    logDialogflowError("You can only add else statements to the end of conditional blocks. Sorry! Please try again.");
+  }
+}
+
+function dialogflowAddElseIfHandler(row, conditional) {
   // must add to a row with an ending curly brace
   var lineToAddTo = row;
   if (lineToAddTo == null) {
@@ -892,11 +956,9 @@ function dialogflowAddElseHandler(row, conditional) {
     // write else if, if there is a conditional
     if (conditional != null) {
       // replace text version of conditional, if any
-      var conditionalWithSymbol = stringToConditional(conditional);
+      var conditionalWithSymbol = parseOperators(conditional);
 
       lines.push("} else if (" + conditionalWithSymbol + ") {");
-    } else {
-      lines.push("} else {");
     }
 
     lines.push("// Add code here");
@@ -921,9 +983,7 @@ function dialogflowAddCommandHandler(row, commandPhrase) {
     var lines = [];
     lines.push(commandPhrase + ";");
     aceAddLinesAt(row, lines);
-  } else {
-    logDialogflowError("No command phrase found.");
-  }
+  } 
 }
 
 // handles all actions returned from dialogflow
@@ -937,13 +997,12 @@ function dialogflowHandler(command) {
       //make sure both values exist before creating file
       if (name != "" && type != "") {
         // create new file
-        var fileName = name + "." + type;
-
+        var fileName = name + "." + type.toLowerCase();
         dialogflowCreateFileHandler(fileName);
         setTimeout(dialogflowChangeFileHandler.bind(null, fileName), 1000);
 
         // if cpp file, deploy default template
-        if (type == "cpp") {
+        if (type.toLowerCase() == "cpp") {
           setTimeout(dialogflowDefaultTempHandler, 1200);
         }
       }
@@ -972,7 +1031,7 @@ function dialogflowHandler(command) {
 
       //make sure both values exist before deleting file
       if (name != "" && type != "") {
-        var fileName = name + "." + type;
+        var fileName = name + "." + type.toLowerCase();
         dialogflowDeleteFileHandler(fileName);
       }
       break;
@@ -983,7 +1042,7 @@ function dialogflowHandler(command) {
 
       //make sure both values exist before changing file
       if (name != "" && type != "") {
-        var fileName = name + "." + type;
+        var fileName = name + "." + type.toLowerCase();
         dialogflowChangeFileHandler(fileName);
       }
 
@@ -1003,8 +1062,13 @@ function dialogflowHandler(command) {
       break;
 
     case "AddInclude":
-      dialogflowAddInclude(command.headerName, command.localHeader);
-      break
+		if(command.allRequiredParamsPresent)
+		{
+			var headerName = command.parameters.fields.headerName.stringValue;
+			var localHeader = command.parameters.fields.localHeader.stringValue;
+		  dialogflowAddInclude(headerName, localHeader);
+		}
+      break;
 
     case "AddNewLine":
       var row = command.parameters.fields.row.stringValue;
@@ -1015,17 +1079,24 @@ function dialogflowHandler(command) {
       break;
 
     case "Print":
-      var content = command.parameters.fields.content.stringValue;
-      dialogflowPrintHandler(null, content);
+	  if(command.allRequiredParamsPresent)
+	  {
+		  var content = command.parameters.fields.content.stringValue;
+		  var type = command.parameters.fields.type.stringValue;
+		  dialogflowPrintHandler(null, content, type.toLowerCase());
+	  }
       break;
 
     case "AddVariable":
       var name = command.parameters.fields.name.stringValue;
-      var type = command.parameters.fields.type.stringValue;
+      var strType = command.parameters.fields.type.stringValue;
       var value = command.parameters.fields.value.stringValue;
 
-      if (name != "" && type != "" && value != "") {
-        switch (type) {
+      if (name != "" && strType != "" && value != "") {
+        
+		var type = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
+		
+		switch (type) {
           case "integer":
             var type = "int";
             dialogflowAddVariableHandler(null, type, name, value);
@@ -1087,14 +1158,18 @@ function dialogflowHandler(command) {
       }
       break;
 
-    case "AddElse":
+    case "AddElseIf":
       if (command.allRequiredParamsPresent) {
         var fields = command.parameters.fields;
         var conditional = fields.conditional['stringValue'];
-        dialogflowAddElseHandler(null, conditional);
+        dialogflowAddElseIfHandler(null, conditional);
       }
       break;
-
+	
+	case "AddElse":
+	   dialogflowAddElseHandler();
+	   break;
+	   
     case "RemoveLine":
       var row = command.parameters.fields.row.stringValue;
       var oldRow = command.parameters.fields.row.numberValue;
@@ -1105,8 +1180,12 @@ function dialogflowHandler(command) {
       break;
 
     case "AddCommand":
-      dialogflowAddCommandHandler(command.row, command.commandPhrase);
-      break;
+	  if(command.allRequiredParamsPresent) {
+		  var fields = command.parameters.fields;
+          var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
+		  dialogflowAddCommandHandler(null, parsedCommand);
+		  break;
+	  }
 
     default:
       logDialogflowError("Command not understood. Sorry! Please try again.");
