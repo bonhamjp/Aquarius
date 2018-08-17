@@ -1060,11 +1060,14 @@ function dialogflowHandler(command) {
     case "AddInclude":
 		if(command.allRequiredParamsPresent)
 		{
-			var headerName = command.parameters.fields.headerName.stringValue;
-			var localHeader = command.parameters.fields.localHeader.stringValue;
+		  var name = command.parameters.fields.headerName.stringValue;
+		  var type = command.parameters.fields.filetype['stringValue'];
+		  var headerName = name + "." + type.toLowerCase();
+		  var localHeader = command.parameters.fields.localHeader.stringValue;
 		  dialogflowAddInclude(headerName, localHeader);
 		}
-      break;
+		
+        break;
 
     case "AddNewLine":
       var row = command.parameters.fields.row.stringValue;
