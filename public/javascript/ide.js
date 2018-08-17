@@ -913,24 +913,23 @@ function dialogflowAddElseHandler(row) {
   var lineToAddTo = row;
   if (lineToAddTo == null) {
     // get current cursor position
-    lineToAddTo = editor.getCursorPosition();
+    lineToAddTo = editor.getCursorPosition()["row"];
   }
 
   // check value of line
   var session = editor.session;
-  if ($.trim(session.getLine(lineToAddTo - 1)) == "}") {
-    // remove the line with the ending curly brace
-    aceRemoveLineAt(lineToAddTo);
+  if ($.trim(session.getLine(lineToAddTo)) == "}") {
+    // must use Range type to replace lines
+    var Range = require("ace/range").Range;
 
-    // add the else statement
-    var lines = []
+    // replace the current line with else
+    session.replace(new Range(lineToAddTo, 0, lineToAddTo, Number.MAX_VALUE), "} else {\n// Add code here\n}");
 
-    lines.push("} else {");
+    // make sure everything is formatted correctly
+    aceFormat();
 
-    lines.push("// Add code here");
-    lines.push("}");
-
-    aceAddLinesAt(row, lines);
+    // move cursor into block
+    aceMoveCursorTo(lineToAddTo + 2);
   } else {
     logDialogflowError("You can only add else statements to the end of conditional blocks. Sorry! Please try again.");
   }
@@ -941,30 +940,27 @@ function dialogflowAddElseIfHandler(row, conditional) {
   var lineToAddTo = row;
   if (lineToAddTo == null) {
     // get current cursor position
-    lineToAddTo = editor.getCursorPosition();
+    lineToAddTo = editor.getCursorPosition()["row"];
   }
 
   // check value of line
   var session = editor.session;
-  if ($.trim(session.getLine(lineToAddTo - 1)) == "}") {
-    // remove the line with the ending curly brace
-    aceRemoveLineAt(lineToAddTo);
+  if ($.trim(session.getLine(lineToAddTo)) == "}") {
+    // replace text version of conditional, if any
+    var conditionalWithSymbol = parseOperators(conditional);
 
-    // add the else statement
-    var lines = []
+    // must use Range type to replace lines
+    var Range = require("ace/range").Range;
 
-    // write else if, if there is a conditional
-    if (conditional != null) {
-      // replace text version of conditional, if any
-      var conditionalWithSymbol = parseOperators(conditional);
+    // replace the current line with else
+    session.replace(new Range(lineToAddTo, 0, lineToAddTo, Number.MAX_VALUE), "} else if(" + conditionalWithSymbol + ") {\n// Add code here\n}");
 
-      lines.push("} else if (" + conditionalWithSymbol + ") {");
-    }
+    // make sure everything is formatted correctly
+    aceFormat();
 
-    lines.push("// Add code here");
-    lines.push("}");
+    // move cursor into block
+    aceMoveCursorTo(lineToAddTo + 2);
 
-    aceAddLinesAt(row, lines);
   } else {
     logDialogflowError("You can only add else statements to the end of conditional blocks. Sorry! Please try again.");
   }
@@ -983,7 +979,7 @@ function dialogflowAddCommandHandler(row, commandPhrase) {
     var lines = [];
     lines.push(commandPhrase + ";");
     aceAddLinesAt(row, lines);
-  } 
+  }
 }
 
 // handles all actions returned from dialogflow
@@ -1093,9 +1089,9 @@ function dialogflowHandler(command) {
       var value = command.parameters.fields.value.stringValue;
 
       if (name != "" && strType != "" && value != "") {
-        
+
 		var type = strType.replace(/in/g, "int").replace(/integer/g, "int").replace(/inte/g, "int").replace(/it/g, "int").replace(/inter/g, "int");
-		
+
 		switch (type) {
           case "integer":
             var type = "int";
@@ -1165,11 +1161,13 @@ function dialogflowHandler(command) {
         dialogflowAddElseIfHandler(null, conditional);
       }
       break;
-	
+
 	case "AddElse":
-	   dialogflowAddElseHandler();
-	   break;
-	   
+    if (command.allRequiredParamsPresent) {
+      dialogflowAddElseHandler(null);
+      break;
+    }
+
     case "RemoveLine":
       var row = command.parameters.fields.row.stringValue;
       var oldRow = command.parameters.fields.row.numberValue;
@@ -1182,7 +1180,7 @@ function dialogflowHandler(command) {
     case "AddCommand":
 	  if(command.allRequiredParamsPresent) {
 		  var fields = command.parameters.fields;
-          var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
+      var parsedCommand = parseOperators(String(fields.commandPhrase.stringValue));
 		  dialogflowAddCommandHandler(null, parsedCommand);
 		  break;
 	  }
